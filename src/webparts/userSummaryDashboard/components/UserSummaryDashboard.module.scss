@@ -1,0 +1,51 @@
+@import '~office-ui-fabric-react/dist/sass/References.scss';
+
+.userSummaryDashboard {
+  overflow: hidden;
+  padding: 1em;
+  color: "[theme:bodyText, default: #323130]";
+  color: var(--bodyText);
+  display: flex;
+  justify-content: center;
+  &.teams {
+    font-family: $ms-font-family-fallbacks;
+  }
+}
+
+.webpartContent {
+  max-width: 300px;
+  text-align: center;
+  font-size: 12px;
+}
+
+.link {
+  text-decoration: none;
+  color: "[theme:link, default:#03787c]";
+  color: var(--link);
+}
+
+#largeIcon {
+  width: 48px;
+  height: 48px;
+  color: #666666;
+}
+
+.attendanceRow {
+  font-size: 11px;
+  margin: 3px 0px;
+}
+
+.attendanceListEmpty {
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.divider {
+  margin-top: 3px;
+  margin-bottom: 3px;
+  background: darkgray;
+  height: 0.5px;
+}
+

@@ -1,0 +1,16 @@
+{
+  "@microsoft/generator-sharepoint": {
+    "plusBeta": false,
+    "isCreatingSolution": false,
+    "version": "1.14.0",
+    "libraryName": "nan-fung-webparts",
+    "libraryId": "87d16c45-7666-4df9-a790-07e183790b16",
+    "environment": "spo",
+    "packageManager": "npm",
+    "solutionName": "nan-fung-webparts",
+    "solutionShortDescription": "nan-fung-webparts description",
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "componentType": "webpart"
+  }
+}

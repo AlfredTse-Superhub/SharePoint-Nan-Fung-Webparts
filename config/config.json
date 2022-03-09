@@ -1,0 +1,36 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/config.2.0.schema.json",
+  "version": "2.0",
+  "bundles": {
+    "user-summary-dashboard-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/userSummaryDashboard/UserSummaryDashboardWebPart.js",
+          "manifest": "./src/webparts/userSummaryDashboard/UserSummaryDashboardWebPart.manifest.json"
+        }
+      ]
+    },
+    "leave-records-dashboard-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/leaveRecordsDashboard/LeaveRecordsDashboardWebPart.js",
+          "manifest": "./src/webparts/leaveRecordsDashboard/LeaveRecordsDashboardWebPart.manifest.json"
+        }
+      ]
+    },
+    "attendance-records-dashboard-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/attendanceRecordsDashboard/AttendanceRecordsDashboardWebPart.js",
+          "manifest": "./src/webparts/attendanceRecordsDashboard/AttendanceRecordsDashboardWebPart.manifest.json"
+        }
+      ]
+    }
+  },
+  "externals": {},
+  "localizedResources": {
+    "UserSummaryDashboardWebPartStrings": "lib/webparts/userSummaryDashboard/loc/{locale}.js",
+    "LeaveRecordsDashboardWebPartStrings": "lib/webparts/leaveRecordsDashboard/loc/{locale}.js",
+    "AttendanceRecordsDashboardWebPartStrings": "lib/webparts/attendanceRecordsDashboard/loc/{locale}.js"
+  }
+}
