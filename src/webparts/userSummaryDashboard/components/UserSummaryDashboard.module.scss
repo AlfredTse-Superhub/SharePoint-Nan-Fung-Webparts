@@ -13,9 +13,46 @@
 }
 
 .webpartContent {
-  max-width: 300px;
+  width: 90%;
   text-align: center;
   font-size: 12px;
+  display: flex;
+  justify-content: center;
+}
+
+.tabs {
+  width: 100%;
+
+  li {
+    padding: 6px 7px;
+  }
+
+  .tabPanel {
+    display: flex;
+    justify-content: center;
+  }
+  
+  .tabPanelContent {
+    width: 90%
+  }
+
+  .attendanceList {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .attendanceRow {
+    font-size: 11px;
+    margin: 3px 0px;
+  }
+
+  .attendanceListEmpty {
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 }
 
 .link {
@@ -28,18 +65,6 @@
   width: 48px;
   height: 48px;
   color: #666666;
-}
-
-.attendanceRow {
-  font-size: 11px;
-  margin: 3px 0px;
-}
-
-.attendanceListEmpty {
-  height: 40px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
 
 .divider {

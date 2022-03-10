@@ -44,8 +44,6 @@ export interface ILeaveRecordsDashboardState {
   leaveTypes: ILeaveType;
   userAnnualLeave: IUserAnnualLeave;
   userLeaves: IUserLeave;
-  filterMonth: Date;
-  filterDateFrom: Date;
-  filterDateTo: Date;
+  filterYear: Date;
   filterLeaveType: string;
 }

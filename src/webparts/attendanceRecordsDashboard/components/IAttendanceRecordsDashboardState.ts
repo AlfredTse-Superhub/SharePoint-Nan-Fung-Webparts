@@ -1,7 +1,8 @@
 export type LoadingStatus = 'loading' | 'loaded' | 'loadNoData' | 'loadError'
 
 export interface IUserAttendanceData {
-  logDateTime: string;
+  logDate: string;
+  logTime: string;
   logLocation: string;
 }
 

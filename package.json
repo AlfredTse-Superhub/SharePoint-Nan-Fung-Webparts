@@ -22,6 +22,7 @@
     "@types/axios": "^0.14.0",
     "@types/react-datepicker": "^4.3.4",
     "@types/react-tabs": "^2.3.4",
+    "mdbreact": "^5.2.0",
     "moment": "^2.29.1",
     "office-ui-fabric-react": "7.174.1",
     "react": "16.13.1",
@@ -30,7 +31,8 @@
     "react-dom": "16.13.1",
     "react-dropdown": "^1.9.2",
     "react-month-picker": "^2.2.1",
-    "react-tabs": "^4.0.1"
+    "react-tabs": "^4.0.1",
+    "react-year-picker": "^0.3.7"
   },
   "devDependencies": {
     "@types/react": "16.9.51",

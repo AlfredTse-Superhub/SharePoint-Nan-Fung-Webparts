@@ -1,30 +1,34 @@
 import * as React from 'react';
 import { ILeaveRecordsDashboardProps } from './ILeaveRecordsDashboardProps';
-import { ContentView, ILeaveTypeData, IUserAnnualLeaveData, IUserLeaveData, ILeaveRecordsDashboardState } from './ILeaveRecordsDashboardState';
-import { escape } from '@microsoft/sp-lodash-subset';
+import { ILeaveTypeData, IUserAnnualLeaveData, IUserLeaveData, ILeaveRecordsDashboardState } from './ILeaveRecordsDashboardState';
+// import { escape } from '@microsoft/sp-lodash-subset';
 import axios from 'Axios';
-import { Grid, Button } from '@material-ui/core';
-import { ExpandMore, ExpandLess, Error } from '@material-ui/icons';
-import { Dropdown,IDropdownOption } from 'office-ui-fabric-react';
-import { ToggleButton, ToggleButtonGroup } from '@material-ui/lab';
-import FullCalendar, { EventContentArg } from '@fullcalendar/react'
-import dayGridPlugin from '@fullcalendar/daygrid'
+import { Grid } from '@material-ui/core';
+import { ExpandMore, ExpandLess, DateRange, List, Error, Search, Clear } from '@material-ui/icons';
+import { Dropdown, IDropdownOption, IconButton, Toggle } from 'office-ui-fabric-react';
+// import { ToggleButton, ToggleButtonGroup } from '@material-ui/lab';
+import FullCalendar, { EventContentArg } from '@fullcalendar/react';
+import dayGridPlugin from '@fullcalendar/daygrid';
 import DatePicker from 'react-datepicker';
+import { MDBDataTable,  } from 'mdbreact';
 import { isNull } from 'lodash';
 import * as moment from 'moment';
 
+import 'bootstrap-css-only/css/bootstrap.min.css';
+import 'mdbreact/dist/css/mdb.css';
+import 'react-datepicker/dist/react-datepicker.css';
 import styles from './LeaveRecordsDashboard.module.scss';
+
 
 
 export default class LeaveRecordsDashboard extends React.Component<ILeaveRecordsDashboardProps, ILeaveRecordsDashboardState> {
   private _userEmail: string = this.props.context.pageContext.legacyPageContext.userEmail;
   private _absoluteUrl: string = this.props.context.pageContext.web.absoluteUrl;
-  private _currentYear: string = new Date().getFullYear().toString();
-  private _maxRecords: number = 10;
+  private _selectedYear = new Date();
+  // private _maxRecords: number = 20;
   private _leaveTypesOptions: IDropdownOption[] = [];
   private _userCalendarEvents: Array<any> = [];
   private _calendarRef = React.createRef<FullCalendar>();
-  private _monthPicker = React.createRef<DatePicker>();
 
   constructor(props) {
     super(props);
@@ -39,19 +43,13 @@ export default class LeaveRecordsDashboard extends React.Component<ILeaveRecords
       },
       userAnnualLeave: {
         loadingStatus: 'loading',
-        data: {
-          annualLeaveTotal: 0,
-          annualLeaveTaken: 0,
-          sickLeaveTaken: 0
-        }
+        data: null
       },
       userLeaves: {
         loadingStatus: 'loading',
         data: []
       },
-      filterMonth: null,
-      filterDateFrom: null,
-      filterDateTo: null,
+      filterYear: null,
       filterLeaveType: '所有',
     };
   }
@@ -114,11 +112,12 @@ export default class LeaveRecordsDashboard extends React.Component<ILeaveRecords
     }
   }
 
-  private async getUserAnnualLeave(): Promise<void> {
+  private async getUserAnnualLeave(year: Date = new Date()): Promise<void> {
     try {
       const response = await axios.get(
         this._absoluteUrl + `/_api/web/lists/getbytitle('LEAVEANU')/items?` +
-          `$filter=CARD_NO eq '${this.state.userCardNo}'`
+          `$filter=CARD_NO eq '${this.state.userCardNo}'` +
+          `and YEAR eq '${year.getFullYear().toString()}'`
       );
       if (response.data.value.length > 0) {
         this.setState({
@@ -141,34 +140,23 @@ export default class LeaveRecordsDashboard extends React.Component<ILeaveRecords
     }
   }
 
-  private async getUserLeaves(
-    month: Date = null,
-    dateFrom: Date = null, 
-    dateTo: Date = null, 
-    leaveType: string = '所有'
-  ): Promise<void> {
+  private async getUserLeaves(filterYear: Date = null, leaveType: string = '所有'): Promise<void> {
     try {
-      let dateFromCondition = ``;
-      let dateToCondition = ``;
+      let dateCondition = ``;
       let leaveTypeCondition = ``;
+      
+      if (leaveType != '所有') { leaveTypeCondition = ` and leave_type eq '${this.getLeaveTypeID(leaveType)}'`; }
+      if (isNull(filterYear)) { filterYear = new Date(new Date().getFullYear(), 0, 1);}
 
-      if (!isNull(dateFrom)) { dateFromCondition = `and leave_date_from ge datetime'${dateFrom.toISOString()}'`; }
-      if (!isNull(dateTo)) { dateToCondition = `and leave_date_to le datetime'${dateTo.toISOString()}'`; }
-      if (!isNull(month)) {
-        let nextMonth = new Date(month.toISOString());
-        nextMonth.setMonth(nextMonth.getMonth() + 1);
-        dateFromCondition = `and leave_date_from ge datetime'${month.toISOString()}'`;
-        dateToCondition = `and leave_date_to lt datetime'${nextMonth.toISOString()}'`;
-      }
-      if (leaveType != '所有') { leaveTypeCondition = `and leave_type eq '${this.getLeaveTypeID(leaveType)}'`; }
+      let nextYear = new Date(filterYear.toISOString());
+      nextYear.setFullYear(nextYear.getFullYear() + 1);
+      dateCondition = ` and leave_date_to ge datetime'${filterYear.toISOString()}' and leave_date_to lt datetime'${nextYear.toISOString()}'`;
 
       const response = await axios.get(
         this._absoluteUrl + `/_api/web/lists/getbytitle('LEAVE')/items?` +
-          `$top=${this._maxRecords} &` +
           `$orderby=leave_date_to desc &` +
           `$filter=card_no eq '${this.state.userCardNo}'` +
-          dateFromCondition +
-          dateToCondition +
+          dateCondition +
           leaveTypeCondition
       );
       this._userCalendarEvents = [];
@@ -177,9 +165,9 @@ export default class LeaveRecordsDashboard extends React.Component<ILeaveRecords
         let userLeavesData: IUserLeaveData[] = [];
         response.data.value.map((item: IUserLeaveData) => {
           userLeavesData.push({
-            leaveTypeID: item['leave_type'],
-            leaveDateFrom: item['leave_date_from'],
-            leaveDateTo: item['leave_date_to'],
+            leaveTypeID: this.getLeaveTypeTitle(item['leave_type']),
+            leaveDateFrom: this.formatDate(item['leave_date_from']),
+            leaveDateTo: this.formatDate(item['leave_date_to']),
             daysCount: item['total_day']
           });
           this._userCalendarEvents.push({
@@ -188,7 +176,7 @@ export default class LeaveRecordsDashboard extends React.Component<ILeaveRecords
             end: item['leave_date_to']
           })
         })
-        this.setState({userLeaves: {loadingStatus: 'loaded',data: userLeavesData}});
+        this.setState({userLeaves: {loadingStatus: 'loaded', data: userLeavesData}});
 
       } else {
         this.setState({userLeaves: {loadingStatus: 'loadNoData', data: null}});
@@ -200,25 +188,22 @@ export default class LeaveRecordsDashboard extends React.Component<ILeaveRecords
     }
   }
 
-  // private changeMonth(date: Date): void {
-  //   this.setState({filterMonth: date});
-  //   // this._calendarRef.current.getApi().changeView('dayGridMonth', this.formatDate(date.toISOString()));
-  // }
-
-  private async applyFilter(filterType: ContentView): Promise<void> {
-    if (filterType === 'calendar')
-      await this.getUserLeaves(this.state.filterMonth, null ,null, this.state.filterLeaveType);
-    if (filterType === 'list')
-      await this.getUserLeaves(null, this.state.filterDateFrom, this.state.filterDateTo, this.state.filterLeaveType);
-    // change calendar view
-    this._calendarRef.current.getApi().changeView('dayGridMonth', this.formatDate(this.state.filterMonth.toISOString()));
+  private async applyFilter(): Promise<void> {
+    if (isNull(this.state.filterYear)) {
+      this._selectedYear = new Date();
+      this.getUserAnnualLeave();
+    } else {
+      this._selectedYear = this.state.filterYear;
+      this.getUserAnnualLeave(this.state.filterYear);
+    }
+    await this.getUserLeaves(this.state.filterYear, this.state.filterLeaveType);
+    this._calendarRef.current.getApi().changeView('dayGridMonth', this.formatDate(this.state.filterYear.toISOString()));
   }
+
 
   private resetFilter(): void {
     this.setState({
-      filterMonth: null,
-      filterDateFrom: null,
-      filterDateTo: null,
+      filterYear: null,
       filterLeaveType: '所有'
     })
   }
@@ -252,87 +237,128 @@ export default class LeaveRecordsDashboard extends React.Component<ILeaveRecords
       </>
     );
   }
-
-  // private handleEventClick = (clickInfo) => {
-  //   if (confirm(`Are you sure you want to delete the event '${clickInfo.event.title}'`)) {
-  //     // clickInfo.event.remove()
-  //   }
-  // }
-
   
   public render(): React.ReactElement<ILeaveRecordsDashboardProps> {
-    const { showDetails, contentView, userAnnualLeave, userLeaves, filterMonth, filterDateFrom, filterDateTo, filterLeaveType } = this.state;
+    const { showDetails, contentView, userAnnualLeave, userLeaves, filterYear, filterLeaveType } = this.state;
+    const leaveTableColumns = [
+      {
+        label: '類別',
+        field: 'leaveTypeID',
+        sort: 'asc',
+        width: 150
+      },
+      {
+        label: '由日期',
+        field: 'leaveDateFrom',
+        sort: 'asc',
+        width: 270
+      },
+      {
+        label: '至日期',
+        field: 'leaveDateTo',
+        sort: 'asc',
+        width: 270
+      },
+      {
+        label: '日數',
+        field: 'daysCount',
+        sort: 'asc',
+        width: 200
+      },
+    ];
 
     return (
       <section className={styles.leaveRecordsDashboard}>
         {/* Top Bar section */}
         <div className={styles.leaveOverview}>
           {/* Title section */}
-          <Grid container>
-            <Grid item sm={10} md={10}>
-              <div className={styles.leaveTitleBar} onClick={()=> this.setState({showDetails: !showDetails})}>
-                {this._currentYear}假期查詢
-                {!showDetails && <ExpandMore id={styles.mediumIcon} />}
-                {showDetails && <ExpandLess id={styles.mediumIcon} />}
-              </div>
+          <div className={styles.leaveTitleBar}>
+            <Grid container>
+              <Grid item sm={8} md={9}>
+                <div className={styles.leaveTitleBarItem} onClick={()=> this.setState({showDetails: !showDetails})}>
+                  {this._selectedYear.getFullYear().toString()}假期查詢
+                  {!showDetails && <ExpandMore id={styles.expandIcon} />}
+                  {showDetails && <ExpandLess id={styles.expandIcon} />}
+                </div>
+              </Grid>
+              <Grid item sm={4} md={3}>
+                {/* <ToggleButtonGroup
+                  color="primary"
+                  exclusive
+                  size='small'
+                  onChange={(onClick, value) => {this.setState({contentView: value})}}
+                >
+                  <ToggleButton selected={contentView === 'calendar'} value='calendar'>Calendar</ToggleButton>
+                  <ToggleButton selected={contentView === 'list'} value='list'>List</ToggleButton>
+                </ToggleButtonGroup> */}
+                <div style={{whiteSpace: 'normal'}} className={styles.leaveTitleBarItem}>
+                  <Toggle
+                    className={styles.toggle}
+                    // style={{margin: '0'}}
+                    defaultChecked
+                    onText="Show List"
+                    offText="Show Calendar"
+                    onChange={(onChange, isChecked) => {
+                      if(isChecked) 
+                        this.setState({contentView: 'calendar'})
+                      else
+                        this.setState({contentView: 'list'})
+                    }}
+                  />
+                </div>
+              </Grid>
             </Grid>
-            <Grid item sm={2} md={2}>
-              <ToggleButtonGroup
-                color="primary"
-                exclusive
-                size='small'
-                onChange={(onClick, value) => {this.setState({contentView: value})}}
-              >
-                <ToggleButton selected={contentView === 'calendar'} value='calendar'>Calendar</ToggleButton>
-                <ToggleButton selected={contentView === 'list'} value='list'>List</ToggleButton>
-              </ToggleButtonGroup>
-            </Grid>
-          </Grid>
+          </div>
 
           {/* Leave Overiew section */}
           <div className={styles.divider} />
-          <div>
+          <div >
             <Grid container>
               <Grid item sm={3} md={3}>年假</Grid>
-              <Grid item sm={3} md={3}>總數 <span className={styles.leaveTotal}>{userAnnualLeave.data.annualLeaveTotal}</span></Grid>
-              <Grid item sm={3} md={3}>已取 <span className={styles.leaveTaken}>{userAnnualLeave.data.annualLeaveTaken}</span></Grid>
-              <Grid item sm={3} md={3}>餘額 <span className={styles.leaveRemaining}>{userAnnualLeave.data.annualLeaveTotal - userAnnualLeave.data.annualLeaveTaken}</span></Grid>
+              <Grid item sm={3} md={3}>總數 <span className={styles.leaveTotal}>{isNull(userAnnualLeave.data) ? 0 : userAnnualLeave.data.annualLeaveTotal}</span></Grid>
+              <Grid item sm={3} md={3}>已取 <span className={styles.leaveTaken}>{isNull(userAnnualLeave.data) ? 0 : userAnnualLeave.data.annualLeaveTaken}</span></Grid>
+              <Grid item sm={3} md={3}>餘額 <span className={styles.leaveRemaining}>{isNull(userAnnualLeave.data) ? 0 : (userAnnualLeave.data.annualLeaveTotal - userAnnualLeave.data.annualLeaveTaken)}</span></Grid>
             </Grid>
             <div className={styles.divider} />
             <Grid container>
               <Grid item sm={6} md={6}>病假</Grid>
-              <Grid item sm={6} md={6}>已取 <span className={styles.leaveTaken}>{userAnnualLeave.data.sickLeaveTaken}</span></Grid>
+              <Grid item sm={6} md={6}>已取 <span className={styles.leaveTaken}>{isNull(userAnnualLeave.data) ? 0 : userAnnualLeave.data.sickLeaveTaken}</span></Grid>
             </Grid>
           </div>
         </div>
 
         {/* User Leave Calendar View section */}
-        {(showDetails && contentView === 'calendar') &&
+        {showDetails &&
           <div className={styles.leaveContentView}>
             {/* Filter section */}
             <div className={styles.filterSection}>
               <Grid container>
-                <Grid item sm={3} md={3}>選擇月份</Grid>
-                <Grid item sm={3} md={3}>類別</Grid>
+                <Grid item xs={12} sm={4} md={3}>選擇年份</Grid>
+                <Grid item xs={12} sm={4} md={3}>類別</Grid>
               </Grid>
               <div className={styles.box5px}/>
               <Grid container>
-                <Grid item sm={3} md={3}>
+                <Grid item xs={12} sm={4} md={3}>
                   <DatePicker
-                    ref={this._monthPicker}
-                    placeholderText='Pick a month'
+                    placeholderText='Pick a year'
                     className={styles.datePicker}
-                    value={isNull(filterMonth)
+                    value={isNull(filterYear)
                             ? null 
-                            : moment(filterMonth).format('MM/yyyy')}
-                    dateFormat='MM/yyyy'
-                    showMonthYearPicker={true}
+                            : moment(filterYear).format('yyyy')}
+                    dateFormat='yyyy'
+                    showYearPicker
                     onChange={(date) => {
-                      this.setState({filterMonth: date});
+                      this.setState({filterYear: date});
                     }}
                   />
+                {/* <DatePicker
+                  
+                  firstDayOfWeek={DayOfWeek.Sunday}
+                  placeholder="Select a date..."
+                  // strings={}
+                /> */}
                 </Grid>
-                <Grid item sm={3} md={3}>
+                <Grid item xs= {12} sm={4} md={3}>
                   <Dropdown
                     className={styles.dropdown}
                     placeholder='Select Leave Type'
@@ -345,138 +371,67 @@ export default class LeaveRecordsDashboard extends React.Component<ILeaveRecords
                     }}
                   />
                 </Grid>
-              </Grid>
-              <Grid container>
-                <Grid item sm={12} md={12}>
-                  <Button style={{color: 'darkslategrey'}} onClick={() => this.applyFilter('calendar')}>Filter</Button>
-                  <Button style={{color: 'darkslategrey'}} onClick={() => this.resetFilter()}>Reset</Button>
+                <Grid item xs={12} sm={3} md={3}>
+                  <IconButton className={styles.iconButton} onClick={() => this.applyFilter()}><Search /></IconButton>
+                  <IconButton className={styles.iconButton} onClick={() => this.resetFilter()}><Clear /></IconButton>
                 </Grid>
               </Grid>
             </div>
             
             {/* Calendar section */}
-            <FullCalendar
-              ref={this._calendarRef}
-              plugins={[ dayGridPlugin ]}
-              initialView="dayGridMonth"
-              events={this._userCalendarEvents}
-              eventContent={this.renderEventContent}
-              navLinkDayClick={() => {console.log("clicked")}}
-            />
-          </div>
-        }
+            { contentView === 'calendar' &&
+              <div style={{width: '100%'}}>
+                <FullCalendar
+                  ref={this._calendarRef}
+                  plugins={[ dayGridPlugin ]}
+                  initialView="dayGridMonth"
+                  events={this._userCalendarEvents}
+                  eventContent={this.renderEventContent}
+                  navLinkDayClick={() => {console.log("clicked")}}
+                />
+              </div>
+            }
 
-        {/* User Leave List View section */}
-        {(showDetails && contentView==='list') &&
-          <div className={styles.leaveContentView}>
-            {/* Filter section */}
-            <div className={styles.filterSection}>
-              <Grid container>
-                <Grid item sm={3} md={3}>由日期</Grid>
-                <Grid item sm={3} md={3}>至日期</Grid>
-                <Grid item sm={3} md={3}>類別 </Grid>
-              </Grid>
-              <div className={styles.box5px}/>
-              <Grid container>
-                <Grid item sm={3} md={3}>
-                  <DatePicker
-                    placeholderText='Select date from'
-                    className={styles.datePicker}
-                    value={isNull(filterDateFrom)
-                            ? null 
-                            : moment(filterDateFrom).format('yyyy-MM-DD')}
-                    onChange={(date) => {
-                      this.setState({
-                        filterDateFrom: date
-                      });
-                    }}
-                  />
-                </Grid>
-                <Grid item sm={3} md={3}>
-                  <DatePicker
-                    placeholderText='Select date to'
-                    className={styles.datePicker}
-                    value={isNull(filterDateTo)
-                            ? null 
-                            : moment(filterDateTo).format('yyyy-MM-DD')}
-                    onChange={(date) => {
-                      this.setState({
-                        filterDateTo: date
-                      })
-                    }}
-                  />
-                </Grid>
-                <Grid item sm={3} md={3}>
-                  <Dropdown
-                    className={styles.dropdown}
-                    placeholder='Select Leave Type'
-                    options={this._leaveTypesOptions}
-                    selectedKey={this.getDropdownSelectedKey()}
-                    onChange={(onChange, option) => {
-                      this.setState({
-                        filterLeaveType: option.text
-                      })
-                      console.log("Leave Type: " + filterLeaveType)
-                    }}
-                  />
-                </Grid>
-              </Grid>
-              <Grid container>
-                <Grid item sm={12} md={12}>
-                  <Button style={{color: 'darkslategrey'}} onClick={() => this.applyFilter('list')}>Filter</Button>
-                  <Button style={{color: 'darkslategrey'}} onClick={() => this.resetFilter()}>Reset</Button>
-                </Grid>
-              </Grid>
-            </div>
-            
             {/* List section */}
-            <div className={styles.leaveListHeader}>
-              <Grid container>
-                <Grid item sm={3} md={3}>類別</Grid>
-                <Grid item sm={8} md={8}>日期</Grid>
-                <Grid item sm={1} md={1}>日數</Grid>
-              </Grid>
-            </div>
-
-            {userLeaves.loadingStatus === 'loading' &&
-              <div className={styles.leaveListEmpty}>
-                Loading...
-              </div>
-            }
-            {userLeaves.loadingStatus === 'loadNoData' &&
-              <div className={styles.leaveListEmpty}>
-                -No Data-
-              </div>
-            }
-            {userLeaves.loadingStatus === 'loadError' &&
-              <div className={styles.leaveListEmpty}>
-                <Error style={{color: 'slategrey'}}/>
-                <div>Oops, Something went wrong</div>
-              </div>
-            }
-            {userLeaves.loadingStatus === 'loaded' &&
+            { contentView === 'list' &&
               <div>
-                { userLeaves.data.map((item) => {
-                    return (
-                      <div className={styles.leaveListRow}>
-                        <Grid container>
-                          <Grid item sm={3} md={3}>{this.getLeaveTypeTitle(item.leaveTypeID)}</Grid>
-                          <Grid item sm={8} md={8}>
-                            {item.leaveDateFrom == item.leaveDateTo 
-                              ? this.formatDate(item.leaveDateTo) 
-                              : this.formatDate(item.leaveDateFrom) + ' - ' + this.formatDate(item.leaveDateTo)}
-                          </Grid>
-                          <Grid item sm={1} md={1}>{item.daysCount}</Grid>
-                        </Grid>
-                      </div>
-                    );
-                  })
+                {userLeaves.loadingStatus === 'loading' &&
+                  <div className={styles.leaveListEmpty}>
+                    Loading...
+                  </div>
+                }
+                {userLeaves.loadingStatus === 'loadNoData' &&
+                  <div className={styles.leaveListEmpty}>
+                    -No Data-
+                  </div>
+                }
+                {userLeaves.loadingStatus === 'loadError' &&
+                  <div className={styles.leaveListEmpty}>
+                    <Error style={{color: 'slategrey'}}/>
+                    <div>Oops, Something went wrong</div>
+                  </div>
+                }
+                {userLeaves.loadingStatus === 'loaded' &&
+                  <div>
+                    <MDBDataTable
+                      striped
+                      bordered
+                      small
+                      noBottomColumns
+                      sortable={false}
+                      className={styles.leaveTable}
+                      data={{
+                        columns: leaveTableColumns,
+                        rows: userLeaves.data
+                      }}
+                    />
+                  </div>
                 }
               </div>
             }
           </div>
         }
-        
+
         {/* Footer section */}
         {showDetails &&
           <div className={styles.footer}>

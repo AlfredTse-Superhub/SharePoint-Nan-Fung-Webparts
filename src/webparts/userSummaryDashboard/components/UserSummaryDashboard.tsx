@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { IUserSummaryDashboardProps } from './IUserSummaryDashboardProps';
 import { IUserAttendanceData, IUserSummaryDashboardState } from './IUserSummaryDashboardState';
-import { escape } from '@microsoft/sp-lodash-subset';
 import axios from 'Axios';
 import { Grid } from '@material-ui/core';
 import { DateRange, Error } from '@material-ui/icons';
@@ -130,84 +129,92 @@ export default class UserSummaryDashboard extends React.Component<IUserSummaryDa
     return (
       <section className={styles.userSummaryDashboard}>
         <div className={styles.webpartContent}>
-          <Tabs>
+          <Tabs className={styles.tabs}>
             <TabList>
-              <Tab style={{padding: '6px 7px'}}>Leave</Tab>
-              <Tab style={{padding: '6px 7px'}}>Lunch</Tab>
-              <Tab style={{padding: '6px 7px'}}>Attendance</Tab>
-              <Tab style={{padding: '6px 7px'}}>Snack</Tab>
+              <Tab>Leave</Tab>
+              <Tab>Lunch</Tab>
+              <Tab>Attendance</Tab>
+              <Tab>Snack</Tab>
             </TabList>
 
-            <TabPanel>
-              {userAnnualLeave.loadingStatus === 'loading' &&
-                <div>Loading...</div>
-              }
-              {userAnnualLeave.loadingStatus === 'loadNoData' &&
-                <div>-No Data-</div>
-              }
-              {userAnnualLeave.loadingStatus === 'loadError' &&
-                <div>
-                  <Error style={{color: 'slategrey'}}/>
-                  <div>Oops, Something went wrong</div>
-                </div>
-              }
-              {userAnnualLeave.loadingStatus === 'loaded' &&
-                <a className={styles.link} href={this.props.leaveLink}>
+            <TabPanel className={styles.tabPanel}>
+              <div className={styles.tabPanelContent}>
+                {userAnnualLeave.loadingStatus === 'loading' &&
+                  <div>Loading...</div>
+                }
+                {userAnnualLeave.loadingStatus === 'loadNoData' &&
+                  <div>-No Data-</div>
+                }
+                {userAnnualLeave.loadingStatus === 'loadError' &&
                   <div>
-                    <Grid container>
-                      <Grid item sm={6} md={6}>已取年假</Grid>
-                      <Grid item sm={6} md={6}>{userAnnualLeave.data.annualTaken}天</Grid>
-                    </Grid>
-                    <div className={styles.divider}></div>
-                    <Grid container>
-                      <Grid item sm={6} md={6}>年假剩餘</Grid>
-                      <Grid item sm={6} md={6}>{userAnnualLeave.data.annualRemaining}天</Grid>
-                    </Grid>
+                    <Error style={{color: 'slategrey'}}/>
+                    <div>Oops, Something went wrong</div>
                   </div>
-                </a>
-              }
+                }
+                {userAnnualLeave.loadingStatus === 'loaded' &&
+                  <a className={styles.link} href={this.props.leaveLink}>
+                    <div>
+                      <Grid container>
+                        <Grid item sm={6} md={6}>已取年假</Grid>
+                        <Grid item sm={6} md={6}>{userAnnualLeave.data.annualTaken}天</Grid>
+                      </Grid>
+                      <div className={styles.divider}></div>
+                      <Grid container>
+                        <Grid item sm={6} md={6}>年假剩餘</Grid>
+                        <Grid item sm={6} md={6}>{userAnnualLeave.data.annualRemaining}天</Grid>
+                      </Grid>
+                    </div>
+                  </a>
+                }
+              </div>
             </TabPanel>
             <TabPanel>
-              <h2>Lunch</h2>
+              <div className={styles.tabPanel}>
+                <h2>Lunch</h2>
+              </div>
             </TabPanel>
 
             <TabPanel>
-              <Grid container>
-                <Grid item sm={3} md={3}>
-                  <a href={this.props.attendanceLink}>
-                    <DateRange id={styles.largeIcon} />
-                  </a>
-                </Grid>
-                <Grid item sm={9} md={9}>
-                  {userAttendance.loadingStatus === 'loading' &&
-                    <div className={styles.attendanceListEmpty}>Loading...</div>
-                  }
-                  {userAttendance.loadingStatus === 'loadNoData' &&
-                    <div className={styles.attendanceListEmpty}>-No Data-</div>
-                  }
-                  {userAttendance.loadingStatus === 'loadError' &&
-                    <div className={styles.attendanceListEmpty}>
-                      <Error style={{color: 'slategrey'}}/>
-                      <div>Oops, Something went wrong</div>
-                    </div>
-                  }
-                  {userAttendance.loadingStatus === 'loaded' &&
-                    <div>
-                      { userAttendance.data.map((item: IUserAttendanceData) => {
-                          return (
-                            <div className={styles.attendanceRow}>
-                              {this.formatDateTime(item.logDatetime)} - {item.logLocation}
-                            </div>
-                          );
-                      })}
-                    </div>
-                  }
+              <Grid container className={styles.tabPanel}>
+                <Grid item sm={12} md={12}>
+                  <div>
+                    {userAttendance.loadingStatus === 'loading' &&
+                      <div className={styles.attendanceListEmpty}>Loading...</div>
+                    }
+                    {userAttendance.loadingStatus === 'loadNoData' &&
+                      <div className={styles.attendanceListEmpty}>-No Data-</div>
+                    }
+                    {userAttendance.loadingStatus === 'loadError' &&
+                      <div className={styles.attendanceListEmpty}>
+                        <Error style={{color: 'slategrey'}}/>
+                        <div>Oops, Something went wrong</div>
+                      </div>
+                    }
+                    {userAttendance.loadingStatus === 'loaded' &&
+                      <div className={styles.attendanceList}>
+                        <a href={this.props.attendanceLink}>
+                          <DateRange id={styles.largeIcon} />
+                        </a>
+                        <div style={{margin: '0px 3px'}}>
+                          { userAttendance.data.map((item: IUserAttendanceData) => {
+                              return (
+                                <div className={styles.attendanceRow}>
+                                  {this.formatDateTime(item.logDatetime)} - {item.logLocation}
+                                </div>
+                              );
+                          })}
+                        </div>
+                      </div>
+                    }
+                  </div>
                 </Grid>
               </Grid>
             </TabPanel>
 
             <TabPanel>
-              <h2>Snack</h2>
+              <div className={styles.tabPanel}>
+                <h2>Snack</h2>
+              </div>
             </TabPanel>
           </Tabs>
         </div>
