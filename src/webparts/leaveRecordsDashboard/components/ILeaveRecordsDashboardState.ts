@@ -38,7 +38,7 @@ export interface IUserLeave {
 }
 
 export interface ILeaveRecordsDashboardState {
-  showDetails: boolean;
+  isExpanded: boolean;
   contentView: ContentView;
   userCardNo: string;
   leaveTypes: ILeaveType;

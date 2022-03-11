@@ -3,6 +3,8 @@
 .attendanceRecordsDashboard {
   overflow: hidden;
   padding: 1em;
+  font-size: 13px;
+  font-weight: 400;
   color: "[theme:bodyText, default: #323130]";
   color: var(--bodyText);
   &.teams {
@@ -20,35 +22,40 @@
 .filterSection {
   margin: 20px 10px 20px;
   text-align: left;
-  font-size: 12px;
-  
-  .datePicker {
-    max-width: 100%;
 
-    input {
-      border: none !important;
-      border-width: 0 !important;
-    }
+  .datePickerPopper {
+    z-index: 2;
   }
 
   .dropdown {
-    height: 23.5px;
-    width: 90%;
-    line-height: 23.5px;
-    color: #989898;
+    outline: none !important;
+    display: block;
+    width: 100%;
+    height: calc(1.5em + .5rem + 2px);
+    font-size: .875rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #495057;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #ced4da;
+    border-radius: .2rem;
+    transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
 
     span {
-      font-size: 12px;
-      padding: 0px 0px 0px 4px;
-      height: 23.5px;
-      line-height: 23.5px;
+      height: calc(1.5em + .5rem + 2px);
+      font-size: .875rem;
+      color: gray;
+      background-color: transparent;
+      border: none;
+      display: flex;
+      align-items: center;
     }
   }
 }
 
 .attendanceList {
   margin: 20px 10px;
-  font-size: 12px;
 
   .attendanceListEmpty {
     height: 30px;
@@ -90,6 +97,7 @@
   width: 24px;
   height: 24px;
   color: lightslategray;
+  outline: none !important;
 }
 
 .divider {

@@ -3,7 +3,8 @@
 .leaveRecordsDashboard {
   overflow: hidden;
   padding: 1em;
-  font-weight: bolder;
+  font-size: 13px;
+  font-weight: 400;
   color: "[theme:bodyText, default: #323130]";
   color: var(--bodyText);
   &.teams {
@@ -42,7 +43,6 @@
 
 .leaveOverview {
   text-align: left;
-  font-size: 12px;
 
   .leaveTotal {
     width: fit-content;
@@ -75,23 +75,39 @@
 .filterSection {
   margin: 50px 0px 20px;
   text-align: left;
-  font-size: 12px;
 
-  .datePicker {
-    width: 90%;
-    height: 24px;
-    line-height: 24px;
+  .actionButtonGroup {
+    display: flex;
+    align-items: center;
   }
-  
+
+  .datePickerPopper {
+    z-index: 2;
+  }
+
   .dropdown {
-    width: 90%;
+    outline: none !important;
+    display: block;
+    width: 100%;
+    height: calc(1.5em + .5rem + 2px);
+    font-size: .875rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #495057;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #ced4da;
+    border-radius: .2rem;
+    transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
 
     span {
-      font-size: 12px;
-      padding: 0px 0px 0px 4px;
-      height: 24px;
-      line-height: 24px;
-      border-color: #989898;
+      height: calc(1.5em + .5rem + 2px);
+      font-size: .875rem;
+      color: gray;
+      background-color: transparent;
+      border: none;
+      display: flex;
+      align-items: center;
     }
   }
 }
@@ -113,7 +129,6 @@
 
 .leaveContentView {
   margin: 20px 10px;
-  font-size: 12px;
 
   .leaveListEmpty {
     height: 30px;
@@ -163,6 +178,7 @@
   width: 24px;
   height: 24px;
   color: lightslategray;
+  outline: none !important;
 }
 
 .divider {
@@ -177,7 +193,7 @@
 }
 
 .footer {
-  margin: 0px 10px;
-  font-size: 10px;
+  margin: 0px 15px;
+  font-size: 11px;
   color: darkred;
 }

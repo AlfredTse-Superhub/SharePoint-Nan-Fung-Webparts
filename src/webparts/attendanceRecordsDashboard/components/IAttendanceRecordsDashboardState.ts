@@ -16,5 +16,4 @@ export interface IAttendanceRecordsDashboardState {
   userAttendance: IUserAttendance;
   filterDateFrom: Date;
   filterDateTo: Date
-  filterLocation: string;
 }

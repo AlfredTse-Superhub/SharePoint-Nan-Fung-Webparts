@@ -1,23 +1,21 @@
 import * as React from 'react';
 import { ILeaveRecordsDashboardProps } from './ILeaveRecordsDashboardProps';
-import { ILeaveTypeData, IUserAnnualLeaveData, IUserLeaveData, ILeaveRecordsDashboardState } from './ILeaveRecordsDashboardState';
-// import { escape } from '@microsoft/sp-lodash-subset';
+import { ILeaveTypeData, IUserLeaveData, ILeaveRecordsDashboardState } from './ILeaveRecordsDashboardState';
 import axios from 'Axios';
 import { Grid } from '@material-ui/core';
-import { ExpandMore, ExpandLess, DateRange, List, Error, Search, Clear } from '@material-ui/icons';
+import { ExpandMore, ExpandLess, Error, Search, Clear } from '@material-ui/icons';
 import { Dropdown, IDropdownOption, IconButton, Toggle } from 'office-ui-fabric-react';
-// import { ToggleButton, ToggleButtonGroup } from '@material-ui/lab';
 import FullCalendar, { EventContentArg } from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import DatePicker from 'react-datepicker';
-import { MDBDataTable,  } from 'mdbreact';
+import { MDBDataTable } from 'mdbreact';
 import { isNull } from 'lodash';
 import * as moment from 'moment';
 
-import 'bootstrap-css-only/css/bootstrap.min.css';
-import 'mdbreact/dist/css/mdb.css';
 import 'react-datepicker/dist/react-datepicker.css';
 import styles from './LeaveRecordsDashboard.module.scss';
+import 'bootstrap-css-only/css/bootstrap.min.css';
+import 'mdbreact/dist/css/mdb.css';
 
 
 
@@ -25,8 +23,7 @@ export default class LeaveRecordsDashboard extends React.Component<ILeaveRecords
   private _userEmail: string = this.props.context.pageContext.legacyPageContext.userEmail;
   private _absoluteUrl: string = this.props.context.pageContext.web.absoluteUrl;
   private _selectedYear = new Date();
-  // private _maxRecords: number = 20;
-  private _leaveTypesOptions: IDropdownOption[] = [];
+  private _leaveTypesOptions: IDropdownOption[] = [{key: 'default', text: '所有'}];
   private _userCalendarEvents: Array<any> = [];
   private _calendarRef = React.createRef<FullCalendar>();
 
@@ -34,7 +31,7 @@ export default class LeaveRecordsDashboard extends React.Component<ILeaveRecords
     super(props);
 
     this.state = {
-      showDetails: false,
+      isExpanded: true,
       contentView: 'calendar',
       userCardNo: '',
       leaveTypes: {
@@ -103,7 +100,7 @@ export default class LeaveRecordsDashboard extends React.Component<ILeaveRecords
         this.setState({leaveTypes: {loadingStatus: 'loaded', data: leaveTypesData}});
 
       } else {
-        this.setState({leaveTypes: {loadingStatus: 'loadNoData', data: null}});
+        this.setState({leaveTypes: {loadingStatus: 'loadNoData', data: []}});
       }
 
     } catch (error) {
@@ -179,7 +176,7 @@ export default class LeaveRecordsDashboard extends React.Component<ILeaveRecords
         this.setState({userLeaves: {loadingStatus: 'loaded', data: userLeavesData}});
 
       } else {
-        this.setState({userLeaves: {loadingStatus: 'loadNoData', data: null}});
+        this.setState({userLeaves: {loadingStatus: 'loadNoData', data: []}});
       }
 
     } catch (error) {
@@ -196,8 +193,11 @@ export default class LeaveRecordsDashboard extends React.Component<ILeaveRecords
       this._selectedYear = this.state.filterYear;
       this.getUserAnnualLeave(this.state.filterYear);
     }
+
     await this.getUserLeaves(this.state.filterYear, this.state.filterLeaveType);
-    this._calendarRef.current.getApi().changeView('dayGridMonth', this.formatDate(this.state.filterYear.toISOString()));
+    if (this.state.contentView === 'calendar') {
+      this._calendarRef.current.getApi().changeView('dayGridMonth', this.formatDate(this._selectedYear.toISOString()));
+    }
   }
 
 
@@ -239,7 +239,7 @@ export default class LeaveRecordsDashboard extends React.Component<ILeaveRecords
   }
   
   public render(): React.ReactElement<ILeaveRecordsDashboardProps> {
-    const { showDetails, contentView, userAnnualLeave, userLeaves, filterYear, filterLeaveType } = this.state;
+    const { isExpanded, contentView, userAnnualLeave, userLeaves, filterYear, filterLeaveType } = this.state;
     const leaveTableColumns = [
       {
         label: '類別',
@@ -275,29 +275,19 @@ export default class LeaveRecordsDashboard extends React.Component<ILeaveRecords
           <div className={styles.leaveTitleBar}>
             <Grid container>
               <Grid item sm={8} md={9}>
-                <div className={styles.leaveTitleBarItem} onClick={()=> this.setState({showDetails: !showDetails})}>
+                <div className={styles.leaveTitleBarItem} onClick={()=> this.setState({isExpanded: !isExpanded})}>
                   {this._selectedYear.getFullYear().toString()}假期查詢
-                  {!showDetails && <ExpandMore id={styles.expandIcon} />}
-                  {showDetails && <ExpandLess id={styles.expandIcon} />}
+                  {!isExpanded && <ExpandMore id={styles.expandIcon} />}
+                  {isExpanded && <ExpandLess id={styles.expandIcon} />}
                 </div>
               </Grid>
               <Grid item sm={4} md={3}>
-                {/* <ToggleButtonGroup
-                  color="primary"
-                  exclusive
-                  size='small'
-                  onChange={(onClick, value) => {this.setState({contentView: value})}}
-                >
-                  <ToggleButton selected={contentView === 'calendar'} value='calendar'>Calendar</ToggleButton>
-                  <ToggleButton selected={contentView === 'list'} value='list'>List</ToggleButton>
-                </ToggleButtonGroup> */}
                 <div style={{whiteSpace: 'normal'}} className={styles.leaveTitleBarItem}>
                   <Toggle
                     className={styles.toggle}
-                    // style={{margin: '0'}}
                     defaultChecked
-                    onText="Show List"
-                    offText="Show Calendar"
+                    onText="切換至列表"
+                    offText="切換至月歷"
                     onChange={(onChange, isChecked) => {
                       if(isChecked) 
                         this.setState({contentView: 'calendar'})
@@ -328,20 +318,20 @@ export default class LeaveRecordsDashboard extends React.Component<ILeaveRecords
         </div>
 
         {/* User Leave Calendar View section */}
-        {showDetails &&
+        {isExpanded &&
           <div className={styles.leaveContentView}>
             {/* Filter section */}
             <div className={styles.filterSection}>
-              <Grid container>
-                <Grid item xs={12} sm={4} md={3}>選擇年份</Grid>
+              <Grid container spacing={1}>
+                <Grid item xs={12} sm={4} md={3}>年份</Grid>
                 <Grid item xs={12} sm={4} md={3}>類別</Grid>
               </Grid>
-              <div className={styles.box5px}/>
-              <Grid container>
+              <Grid container spacing={1}>
                 <Grid item xs={12} sm={4} md={3}>
                   <DatePicker
-                    placeholderText='Pick a year'
-                    className={styles.datePicker}
+                    placeholderText='--選擇年份--'
+                    className='form-control form-control-sm'
+                    popperClassName={styles.datePickerPopper}
                     value={isNull(filterYear)
                             ? null 
                             : moment(filterYear).format('yyyy')}
@@ -351,17 +341,11 @@ export default class LeaveRecordsDashboard extends React.Component<ILeaveRecords
                       this.setState({filterYear: date});
                     }}
                   />
-                {/* <DatePicker
-                  
-                  firstDayOfWeek={DayOfWeek.Sunday}
-                  placeholder="Select a date..."
-                  // strings={}
-                /> */}
                 </Grid>
                 <Grid item xs= {12} sm={4} md={3}>
                   <Dropdown
                     className={styles.dropdown}
-                    placeholder='Select Leave Type'
+                    placeholder='--假期類別--'
                     options={this._leaveTypesOptions}
                     selectedKey={this.getDropdownSelectedKey()}
                     onChange={(onChange, option) => {
@@ -371,7 +355,7 @@ export default class LeaveRecordsDashboard extends React.Component<ILeaveRecords
                     }}
                   />
                 </Grid>
-                <Grid item xs={12} sm={3} md={3}>
+                <Grid item xs={12} sm={3} md={3} className={styles.actionButtonGroup}>
                   <IconButton className={styles.iconButton} onClick={() => this.applyFilter()}><Search /></IconButton>
                   <IconButton className={styles.iconButton} onClick={() => this.resetFilter()}><Clear /></IconButton>
                 </Grid>
@@ -387,7 +371,6 @@ export default class LeaveRecordsDashboard extends React.Component<ILeaveRecords
                   initialView="dayGridMonth"
                   events={this._userCalendarEvents}
                   eventContent={this.renderEventContent}
-                  navLinkDayClick={() => {console.log("clicked")}}
                 />
               </div>
             }
@@ -400,26 +383,27 @@ export default class LeaveRecordsDashboard extends React.Component<ILeaveRecords
                     Loading...
                   </div>
                 }
-                {userLeaves.loadingStatus === 'loadNoData' &&
-                  <div className={styles.leaveListEmpty}>
-                    -No Data-
-                  </div>
-                }
                 {userLeaves.loadingStatus === 'loadError' &&
                   <div className={styles.leaveListEmpty}>
                     <Error style={{color: 'slategrey'}}/>
                     <div>Oops, Something went wrong</div>
                   </div>
                 }
-                {userLeaves.loadingStatus === 'loaded' &&
+                {(userLeaves.loadingStatus === 'loaded' || userLeaves.loadingStatus === 'loadNoData')  &&
                   <div>
                     <MDBDataTable
+                      className={styles.leaveTable}
                       striped
                       bordered
                       small
                       noBottomColumns
                       sortable={false}
-                      className={styles.leaveTable}
+                      entriesOptions={[10, 20]}
+                      entriesLabel='顯示項目'
+                      searchLabel='搜尋'
+                      paginationLabel={['上貢', '下頁']}
+                      infoLabel={['顯示第', '至' ,'項，共' ,'項記錄']}
+                      noRecordsFoundLabel='沒有記錄'
                       data={{
                         columns: leaveTableColumns,
                         rows: userLeaves.data
@@ -433,7 +417,7 @@ export default class LeaveRecordsDashboard extends React.Component<ILeaveRecords
         }
 
         {/* Footer section */}
-        {showDetails &&
+        {isExpanded &&
           <div className={styles.footer}>
             備註︰
             <br />年假必需每年放清，不可累積，如有特殊情況，由公司酌情處理。

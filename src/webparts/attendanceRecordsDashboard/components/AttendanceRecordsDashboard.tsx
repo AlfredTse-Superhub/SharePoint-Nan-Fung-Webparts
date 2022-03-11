@@ -10,21 +10,16 @@ import { MDBDataTable } from 'mdbreact';
 import { isNull } from 'lodash';
 import * as moment from 'moment';
 
-import 'bootstrap-css-only/css/bootstrap.min.css';
-import 'mdbreact/dist/css/mdb.css';
 import 'react-datepicker/dist/react-datepicker.css';
 import styles from './AttendanceRecordsDashboard.module.scss';
+import 'bootstrap-css-only/css/bootstrap.min.css';
+import 'mdbreact/dist/css/mdb.css';
 
 
 
 export default class AttendanceRecordsDashboard extends React.Component<IAttendanceRecordsDashboardProps, IAttendanceRecordsDashboardState> {
   private _userEmail: string = this.props.context.pageContext.user.email;
   private _absoluteUrl: string = this.props.context.pageContext.web.absoluteUrl;
-  private _locationsOptions: IDropdownOption[] = [
-    {key: 'default', text: '所有地點'},
-    {key: '20main', text: '20 Main'},
-    {key: '5Fmain', text: '5/F Main'}
-  ]
 
   constructor(props: IAttendanceRecordsDashboardProps) {
     super(props);
@@ -37,7 +32,6 @@ export default class AttendanceRecordsDashboard extends React.Component<IAttenda
       },
       filterDateFrom: null,
       filterDateTo: null,
-      filterLocation: '所有地點',
     };
   }
 
@@ -66,25 +60,29 @@ export default class AttendanceRecordsDashboard extends React.Component<IAttenda
 
   private async getUserAttendance(
     dateFrom: Date = null,
-    dateTo: Date = null,
-    location: string = '所有地點'
+    dateTo: Date = null
   ): Promise<void> {
     try {
       let dateFromCondition = ``;
       let dateToCondition = ``;
-      let locationCondition = ``;
-      if (!isNull(dateFrom)) { dateFromCondition = `and H_LOG_DATETIME ge datetime'${dateFrom.toISOString()}'`; }
-      if (!isNull(dateTo)) { dateToCondition = `and H_LOG_DATETIME le datetime'${dateTo.toISOString()}'`; }
-      if (location != '所有地點') { locationCondition = `and H_LOCATION_ID eq '${location}'`; }
+      let today = new Date();
+
+      if (isNull(dateFrom))
+        dateFrom = new Date(today.getFullYear(), today.getMonth(), 1);
+      if (isNull(dateTo))
+        dateTo = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+
+      dateFromCondition = `and H_LOG_DATETIME ge datetime'${dateFrom.toISOString()}'`;
+      dateToCondition = `and H_LOG_DATETIME le datetime'${dateTo.toISOString()}'`;
         
       const response = await axios.get(
         this._absoluteUrl + `/_api/web/lists/getbytitle('attendance')/items?` +
           `$orderby=H_LOG_DATETIME desc &` +
           `$filter=H_CARD_NO eq '${this.state.userCardNo}'` +
           dateFromCondition +
-          dateToCondition +
-          locationCondition
+          dateToCondition
       );
+
       if (response.data.value.length > 0) {
         let attendanceData: IUserAttendanceData[] = [];
         response.data.value.map((item: IUserAttendanceData) => {
@@ -101,7 +99,7 @@ export default class AttendanceRecordsDashboard extends React.Component<IAttenda
           },
         });
       } else {
-        this.setState({userAttendance: {loadingStatus: 'loadNoData', data: null}});
+        this.setState({userAttendance: {loadingStatus: 'loadNoData', data: []}});
       }
 
     } catch (error) {
@@ -111,19 +109,14 @@ export default class AttendanceRecordsDashboard extends React.Component<IAttenda
   }
 
   private applyFilter(): void {
-    this.getUserAttendance(this.state.filterDateFrom, this.state.filterDateTo, this.state.filterLocation);
+    this.getUserAttendance(this.state.filterDateFrom, this.state.filterDateTo);
   }
 
   private resetFilter(): void {
     this.setState({
       filterDateFrom: null,
-      filterDateTo: null,
-      filterLocation: '所有地點'
+      filterDateTo: null
     })
-  }
-
-  private getDropdownSelectedKey(): number | string {
-    return (this._locationsOptions.filter(item => item.text === this.state.filterLocation)[0].key);
   }
 
   private formatDate(dateTime: string): string {
@@ -135,7 +128,7 @@ export default class AttendanceRecordsDashboard extends React.Component<IAttenda
   }
   
   public render(): React.ReactElement<IAttendanceRecordsDashboardProps> {
-    const { userAttendance, filterDateFrom, filterDateTo, filterLocation } = this.state;
+    const { userAttendance, filterDateFrom, filterDateTo } = this.state;
     const attendanceTableColumns = [
       {
         label: '日期',
@@ -164,17 +157,15 @@ export default class AttendanceRecordsDashboard extends React.Component<IAttenda
 
         {/* Filter section */}
         <div className={styles.filterSection}>
-          <Grid container>
+          <Grid container spacing={1}>
             <Grid item xs={12} sm={3} md={3}>開始日期</Grid>
             <Grid item xs={12} sm={3} md={3}>結束日期</Grid>
-            <Grid item xs={12} sm={3} md={3}>地點 </Grid>
           </Grid>
-          <div className={styles.box5px}/>
-          <Grid container>
+          <Grid container spacing={1}>
             <Grid item xs={12} sm={3} md={3}>
               <DatePicker
-                placeholderText='Select date from'
-                className={styles.datePicker}
+                placeholderText='--選擇日期--'
+                className='form-control form-control-sm'
                 value={isNull(filterDateFrom)
                         ? null 
                         : this.formatDate(filterDateFrom.toISOString())}
@@ -187,8 +178,8 @@ export default class AttendanceRecordsDashboard extends React.Component<IAttenda
             </Grid>
             <Grid item xs={12} sm={3} md={3}>
               <DatePicker
-                placeholderText='Select date to'
-                className={styles.datePicker}
+                placeholderText='--選擇日期--'
+                className='form-control form-control-sm'
                 value={isNull(filterDateTo) 
                         ? null 
                         : moment(filterDateTo).format('yyyy-MM-DD')}
@@ -199,20 +190,7 @@ export default class AttendanceRecordsDashboard extends React.Component<IAttenda
                 }}
               />
             </Grid>
-            <Grid item xs={12} sm={3} md={3}>
-              <Dropdown
-                className={styles.dropdown}
-                placeholder='Select Location'
-                options={this._locationsOptions}
-                selectedKey={this.getDropdownSelectedKey()}
-                onChange={(onChange, option) => {
-                  this.setState({
-                    filterLocation: option.text
-                  })
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={3} md={3}>
+            <Grid item xs={12} sm={2} md={2}>
               <IconButton className={styles.iconButton} onClick={() => this.applyFilter()}><Search /></IconButton>
               <IconButton className={styles.iconButton} onClick={() => this.resetFilter()}><Clear /></IconButton>
             </Grid>
@@ -226,26 +204,27 @@ export default class AttendanceRecordsDashboard extends React.Component<IAttenda
               Loading...
             </div>
           }
-          {userAttendance.loadingStatus === 'loadNoData' &&
-            <div className={styles.attendanceListEmpty}>
-              -No Data-
-            </div>
-          }
           {userAttendance.loadingStatus === 'loadError' &&
             <div className={styles.attendanceListEmpty}>
               <Error style={{color: 'slategrey'}}/>
               <div>Oops, Something went wrong</div>
             </div>
           }
-          {userAttendance.loadingStatus === 'loaded' &&
+          {(userAttendance.loadingStatus === 'loaded' || userAttendance.loadingStatus === 'loadNoData') &&
             <div>
               <MDBDataTable
+                className={styles.attendanceTable}
                 striped
                 bordered
                 small
                 noBottomColumns
                 sortable={false}
-                className={styles.attendanceTable}
+                entriesLabel='顯示項目'
+                entriesOptions={[10, 20]}
+                searchLabel='搜尋'
+                paginationLabel={['上貢', '下頁']}
+                infoLabel={['顯示第', '至' ,'項，共' ,'項記錄']}
+                noRecordsFoundLabel='沒有記錄'
                 data={{
                   columns: attendanceTableColumns,
                   rows: userAttendance.data
