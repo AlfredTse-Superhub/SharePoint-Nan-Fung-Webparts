@@ -3,17 +3,17 @@ import { IAttendanceRecordsDashboardProps } from './IAttendanceRecordsDashboardP
 import { IUserAttendanceData, IAttendanceRecordsDashboardState } from './IAttendanceRecordsDashboardState';
 import axios from 'Axios';
 import { Clear, Error, Search } from '@material-ui/icons';
-import { Grid } from '@material-ui/core';
-import { Dropdown, IDropdownOption, IconButton } from 'office-ui-fabric-react';
+import { IconButton } from 'office-ui-fabric-react';
 import DatePicker from "react-datepicker";
 import { MDBDataTable } from 'mdbreact';
 import { isNull } from 'lodash';
 import * as moment from 'moment';
+import classnames from 'classnames';
 
 import 'react-datepicker/dist/react-datepicker.css';
-import styles from './AttendanceRecordsDashboard.module.scss';
 import 'bootstrap-css-only/css/bootstrap.min.css';
 import 'mdbreact/dist/css/mdb.css';
+import styles from './AttendanceRecordsDashboard.module.scss';
 
 
 
@@ -47,7 +47,7 @@ export default class AttendanceRecordsDashboard extends React.Component<IAttenda
   private async getUserInfo(): Promise<void> {
     try {
       const response = await axios.get(
-        this._absoluteUrl + `/_api/web/lists/getbytitle('employee')/items?` +
+        this._absoluteUrl + `/_api/web/lists/getbytitle('Employee Card Record')/items?` +
           `$select=CARD_NO &` +
           `$filter=EMAIL eq '${this._userEmail}'`
       );
@@ -76,7 +76,7 @@ export default class AttendanceRecordsDashboard extends React.Component<IAttenda
       dateToCondition = `and H_LOG_DATETIME le datetime'${dateTo.toISOString()}'`;
         
       const response = await axios.get(
-        this._absoluteUrl + `/_api/web/lists/getbytitle('attendance')/items?` +
+        this._absoluteUrl + `/_api/web/lists/getbytitle('Attendance')/items?` +
           `$orderby=H_LOG_DATETIME desc &` +
           `$filter=H_CARD_NO eq '${this.state.userCardNo}'` +
           dateFromCondition +
@@ -149,89 +149,96 @@ export default class AttendanceRecordsDashboard extends React.Component<IAttenda
 
     return (
       <section className={styles.attendanceRecordsDashboard}>
-        {/* Header section */}
-        <div className={styles.attendanceTitleBar}>
-          考勤查詢
-        </div>
-        <div className={styles.divider} />
-
-        {/* Filter section */}
-        <div className={styles.filterSection}>
-          <Grid container spacing={1}>
-            <Grid item xs={12} sm={3} md={3}>開始日期</Grid>
-            <Grid item xs={12} sm={3} md={3}>結束日期</Grid>
-          </Grid>
-          <Grid container spacing={1}>
-            <Grid item xs={12} sm={3} md={3}>
-              <DatePicker
-                placeholderText='--選擇日期--'
-                className='form-control form-control-sm'
-                value={isNull(filterDateFrom)
-                        ? null 
-                        : this.formatDate(filterDateFrom.toISOString())}
-                onChange={(date) => {
-                  this.setState({
-                    filterDateFrom: date
-                  });
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={3} md={3}>
-              <DatePicker
-                placeholderText='--選擇日期--'
-                className='form-control form-control-sm'
-                value={isNull(filterDateTo) 
-                        ? null 
-                        : moment(filterDateTo).format('yyyy-MM-DD')}
-                onChange={(date) => {
-                  this.setState({
-                    filterDateTo: date
-                  })
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={2} md={2}>
+        <div className='container' style={{width: '100vw'}}>
+          <div className='row'>
+          {/* Header section */}
+          {/* <div className={styles.attendanceTitleBar}>考勤查詢</div> */}
+            <div className={classnames('col-12', styles.noPadding)} style={{margin: '10px 0px'}}>
+              <div className={styles.divider} />
+            </div>
+          </div>
+          {/* Filter section */}
+          <div className='row'>
+            <div className={classnames('col-sm-4 col-md-3', styles.noPadding)}>
+              <div className='col-12'>
+                開始日期
+              </div>
+              <div className='col-12'>
+                <DatePicker
+                  placeholderText='--選擇日期--'
+                  className='form-control form-control-sm'
+                  value={isNull(filterDateFrom)
+                          ? null 
+                          : this.formatDate(filterDateFrom.toISOString())}
+                  onChange={(date) => {
+                    this.setState({
+                      filterDateFrom: date
+                    });
+                  }}
+                />
+              </div>
+            </div>
+            <div className={classnames('col-sm-4 col-md-3', styles.noPadding)}>
+              <div className='col-12'>
+                結束日期
+              </div>
+              <div className='col-12'>
+                <DatePicker
+                  placeholderText='--選擇日期--'
+                  className='form-control form-control-sm'
+                  value={isNull(filterDateTo) 
+                          ? null 
+                          : moment(filterDateTo).format('yyyy-MM-DD')}
+                  onChange={(date) => {
+                    this.setState({
+                      filterDateTo: date
+                    })
+                  }}
+                />
+              </div>
+            </div>
+            <div className={classnames('col-sm-4 col-md-6', styles.filterButton)}>
               <IconButton className={styles.iconButton} onClick={() => this.applyFilter()}><Search /></IconButton>
               <IconButton className={styles.iconButton} onClick={() => this.resetFilter()}><Clear /></IconButton>
-            </Grid>
-          </Grid>
-        </div>
+            </div>
+          </div>
 
-        {/* Attendance list section */}
-        <div className={styles.attendanceList}>
-          {userAttendance.loadingStatus === 'loading' &&
-            <div className={styles.attendanceListEmpty}>
-              Loading...
-            </div>
-          }
-          {userAttendance.loadingStatus === 'loadError' &&
-            <div className={styles.attendanceListEmpty}>
-              <Error style={{color: 'slategrey'}}/>
-              <div>Oops, Something went wrong</div>
-            </div>
-          }
-          {(userAttendance.loadingStatus === 'loaded' || userAttendance.loadingStatus === 'loadNoData') &&
-            <div>
-              <MDBDataTable
-                className={styles.attendanceTable}
-                striped
-                bordered
-                small
-                noBottomColumns
-                sortable={false}
-                entriesLabel='顯示項目'
-                entriesOptions={[10, 20]}
-                searchLabel='搜尋'
-                paginationLabel={['上貢', '下頁']}
-                infoLabel={['顯示第', '至' ,'項，共' ,'項記錄']}
-                noRecordsFoundLabel='沒有記錄'
-                data={{
-                  columns: attendanceTableColumns,
-                  rows: userAttendance.data
-                }}
-              />
-            </div>
-          }
+          {/* Attendance list section */}
+          <div className={classnames("col-12", styles.attendanceList, styles.noPadding)}>
+            {userAttendance.loadingStatus === 'loading' &&
+              <div className={styles.attendanceListEmpty}>
+                Loading...
+              </div>
+            }
+            {userAttendance.loadingStatus === 'loadError' &&
+              <div className={styles.attendanceListEmpty}>
+                <Error style={{color: 'slategrey'}}/>
+                <div>Oops, Something went wrong</div>
+              </div>
+            }
+            {(userAttendance.loadingStatus === 'loaded' || userAttendance.loadingStatus === 'loadNoData') &&
+              <div>
+                <MDBDataTable
+                  className={styles.attendanceTable}
+                  striped
+                  bordered
+                  small
+                  noBottomColumns
+                  sortable={false}
+                  entriesLabel='顯示項目'
+                  entriesOptions={[10, 20]}
+                  searchLabel='搜尋'
+                  paginationLabel={['上貢', '下頁']}
+                  infoLabel={['顯示第', '至' ,'項，共' ,'項記錄']}
+                  noRecordsFoundLabel='沒有記錄'
+                  data={{
+                    columns: attendanceTableColumns,
+                    rows: userAttendance.data
+                  }}
+                />
+              </div>
+            }
+          </div>
         </div>
       </section>
     );

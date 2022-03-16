@@ -1,9 +1,9 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/package-solution.schema.json",
   "solution": {
-    "name": "nan-fung-webparts-client-side-solution",
+    "name": "Nan Fung Webparts",
     "id": "87d16c45-7666-4df9-a790-07e183790b16",
-    "version": "1.0.0.0",
+    "version": "1.0.0.7",
     "includeClientSideAssets": true,
     "skipFeatureDeployment": true,
     "isDomainIsolated": false,

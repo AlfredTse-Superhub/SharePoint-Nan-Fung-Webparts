@@ -30,9 +30,7 @@
     "react-datepicker": "^4.7.0",
     "react-dom": "16.13.1",
     "react-dropdown": "^1.9.2",
-    "react-month-picker": "^2.2.1",
-    "react-tabs": "^4.0.1",
-    "react-year-picker": "^0.3.7"
+    "react-tabs": "^4.0.1"
   },
   "devDependencies": {
     "@types/react": "16.9.51",

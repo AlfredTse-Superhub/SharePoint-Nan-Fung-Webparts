@@ -2,12 +2,13 @@ import * as React from 'react';
 import { IUserSummaryDashboardProps } from './IUserSummaryDashboardProps';
 import { IUserAttendanceData, IUserSummaryDashboardState } from './IUserSummaryDashboardState';
 import axios from 'Axios';
-import { Grid } from '@material-ui/core';
 import { DateRange, Error } from '@material-ui/icons';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import * as moment from 'moment';
+import classnames from 'classnames';
 
 import 'react-tabs/style/react-tabs.css';
+import 'bootstrap-css-only/css/bootstrap.min.css';
 import styles from './UserSummaryDashboard.module.scss';
 
 
@@ -48,7 +49,7 @@ export default class UserSummaryDashboard extends React.Component<IUserSummaryDa
   private async getUserInfo() {
     try {
       const response = await axios.get(
-        this._absoluteUrl + `/_api/web/lists/getbytitle('employee')/items?` +
+        this._absoluteUrl + `/_api/web/lists/getbytitle('Employee Card Record')/items?` +
           `$select=CARD_NO &` +
           `$filter=EMAIL eq '${this._userEmail}'`
       );
@@ -128,74 +129,80 @@ export default class UserSummaryDashboard extends React.Component<IUserSummaryDa
 
     return (
       <section className={styles.userSummaryDashboard}>
-        <div className={styles.webpartContent}>
-          <Tabs className={styles.tabs}>
-            <TabList>
-              <Tab>Leave</Tab>
-              <Tab>Lunch</Tab>
-              <Tab>Attendance</Tab>
-              <Tab>Snack</Tab>
-            </TabList>
+        <div style={{height: '170px'}}>
+          <div className='row'>
+            <div className={classnames('col-12', styles.noPadding)}>
+              <Tabs className={styles.tabs}>
+                <TabList>
+                  <Tab>Leave</Tab>
+                  <Tab>Lunch</Tab>
+                  <Tab>Attendance</Tab>
+                  <Tab>Snack</Tab>
+                </TabList>
 
-            <TabPanel className={styles.tabPanel}>
-              <div className={styles.tabPanelContent}>
-                {userAnnualLeave.loadingStatus === 'loading' &&
-                  <div>Loading...</div>
-                }
-                {userAnnualLeave.loadingStatus === 'loadNoData' &&
-                  <div>-No Data-</div>
-                }
-                {userAnnualLeave.loadingStatus === 'loadError' &&
-                  <div>
-                    <Error style={{color: 'slategrey'}}/>
-                    <div>Oops, Something went wrong</div>
-                  </div>
-                }
-                {userAnnualLeave.loadingStatus === 'loaded' &&
-                  <a className={styles.link} href={this.props.leaveLink}>
-                    <div>
-                      <Grid container>
-                        <Grid item sm={6} md={6}>已取年假</Grid>
-                        <Grid item sm={6} md={6}>{userAnnualLeave.data.annualTaken}天</Grid>
-                      </Grid>
-                      <div className={styles.divider}></div>
-                      <Grid container>
-                        <Grid item sm={6} md={6}>年假剩餘</Grid>
-                        <Grid item sm={6} md={6}>{userAnnualLeave.data.annualRemaining}天</Grid>
-                      </Grid>
-                    </div>
-                  </a>
-                }
-              </div>
-            </TabPanel>
-            <TabPanel>
-              <div className={styles.tabPanel}>
-                <h2>Lunch</h2>
-              </div>
-            </TabPanel>
-
-            <TabPanel>
-              <Grid container className={styles.tabPanel}>
-                <Grid item sm={12} md={12}>
-                  <div>
-                    {userAttendance.loadingStatus === 'loading' &&
-                      <div className={styles.attendanceListEmpty}>Loading...</div>
+                <TabPanel>
+                  <div className='col-12'>
+                    {userAnnualLeave.loadingStatus === 'loading' &&
+                      <div className={styles.colCenter}>Loading...</div>
                     }
-                    {userAttendance.loadingStatus === 'loadNoData' &&
-                      <div className={styles.attendanceListEmpty}>-No Data-</div>
+                    {userAnnualLeave.loadingStatus === 'loadNoData' &&
+                      <div className={styles.colCenter}>-No Data-</div>
                     }
-                    {userAttendance.loadingStatus === 'loadError' &&
-                      <div className={styles.attendanceListEmpty}>
+                    {userAnnualLeave.loadingStatus === 'loadError' &&
+                      <div className={styles.colCenter}>
                         <Error style={{color: 'slategrey'}}/>
                         <div>Oops, Something went wrong</div>
                       </div>
                     }
+                    {userAnnualLeave.loadingStatus === 'loaded' &&
+                      <a className={styles.link} href={this.props.leaveLink}>
+                        <div className='row'>
+                          <div className='col-6'>已取年假</div>
+                          <div className={classnames('col-6', styles.colCenter)}>
+                            {userAnnualLeave.data.annualTaken}天
+                          </div>
+                          <div className='col-12'>
+                            <div className={styles.divider} />
+                          </div>
+                        </div>
+
+                        <div className='row'>
+                          <div className='col-6'>年假剩餘</div>
+                          <div className={classnames('col-6', styles.colCenter)}>
+                            {userAnnualLeave.data.annualRemaining}天
+                          </div>
+                        </div>
+                      </a>
+                    }
+                  </div>
+                </TabPanel>
+                <TabPanel>
+                  <div className={classnames('col-12', styles.colCenter)}>
+                    <h2>Lunch</h2>
+                  </div>
+                </TabPanel>
+
+                <TabPanel>
+                  <div className={classnames('col-12', styles.colCenter)}>
+                    {userAttendance.loadingStatus === 'loading' &&
+                      <div>Loading...</div>
+                    }
+                    {userAttendance.loadingStatus === 'loadNoData' &&
+                      <div>-No Data-</div>
+                    }
+                    {userAttendance.loadingStatus === 'loadError' &&
+                      <div>
+                        <Error style={{color: 'slategrey'}}/> Something went wrong
+                      </div>
+                    }
                     {userAttendance.loadingStatus === 'loaded' &&
-                      <div className={styles.attendanceList}>
-                        <a href={this.props.attendanceLink}>
-                          <DateRange id={styles.largeIcon} />
-                        </a>
-                        <div style={{margin: '0px 3px'}}>
+                      <div className='row'>
+                        <div className={styles.colCenter}>
+                          <a href={this.props.attendanceLink}>
+                            <DateRange id={styles.largeIcon} />
+                          </a>
+                        </div>
+                        <div style={{marginLeft: '5px'}}>
                           { userAttendance.data.map((item: IUserAttendanceData) => {
                               return (
                                 <div className={styles.attendanceRow}>
@@ -207,16 +214,16 @@ export default class UserSummaryDashboard extends React.Component<IUserSummaryDa
                       </div>
                     }
                   </div>
-                </Grid>
-              </Grid>
-            </TabPanel>
+                </TabPanel>
 
-            <TabPanel>
-              <div className={styles.tabPanel}>
-                <h2>Snack</h2>
-              </div>
-            </TabPanel>
-          </Tabs>
+                <TabPanel>
+                  <div className={classnames('col-12', styles.colCenter)}>
+                    <h2>Snack</h2>
+                  </div>
+                </TabPanel>
+              </Tabs>
+            </div>
+          </div>
         </div>
       </section>
     );

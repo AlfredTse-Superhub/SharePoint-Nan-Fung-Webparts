@@ -2,57 +2,42 @@
 
 .userSummaryDashboard {
   overflow: hidden;
-  padding: 1em;
+  font-size: 14px;
   color: "[theme:bodyText, default: #323130]";
   color: var(--bodyText);
-  display: flex;
-  justify-content: center;
   &.teams {
     font-family: $ms-font-family-fallbacks;
   }
 }
 
-.webpartContent {
-  width: 90%;
-  text-align: center;
-  font-size: 12px;
+.noPadding {
+  padding: 0px !important;
+}
+
+.colCenter {
+  padding: 0px !important;
   display: flex;
+  align-items: center;
   justify-content: center;
 }
 
 .tabs {
   width: 100%;
 
-  li {
-    padding: 6px 7px;
-  }
-
-  .tabPanel {
+  ul {
     display: flex;
     justify-content: center;
   }
-  
-  .tabPanelContent {
-    width: 90%
-  }
+}
 
-  .attendanceList {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
+.attendanceList {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
-  .attendanceRow {
-    font-size: 11px;
-    margin: 3px 0px;
-  }
-
-  .attendanceListEmpty {
-    height: 40px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
+.attendanceRow {
+  margin: 4px 0px;
 }
 
 .link {

@@ -2,7 +2,6 @@ import * as React from 'react';
 import { ILeaveRecordsDashboardProps } from './ILeaveRecordsDashboardProps';
 import { ILeaveTypeData, IUserLeaveData, ILeaveRecordsDashboardState } from './ILeaveRecordsDashboardState';
 import axios from 'Axios';
-import { Grid } from '@material-ui/core';
 import { ExpandMore, ExpandLess, Error, Search, Clear } from '@material-ui/icons';
 import { Dropdown, IDropdownOption, IconButton, Toggle } from 'office-ui-fabric-react';
 import FullCalendar, { EventContentArg } from '@fullcalendar/react';
@@ -11,11 +10,12 @@ import DatePicker from 'react-datepicker';
 import { MDBDataTable } from 'mdbreact';
 import { isNull } from 'lodash';
 import * as moment from 'moment';
+import classnames from 'classnames';
 
 import 'react-datepicker/dist/react-datepicker.css';
-import styles from './LeaveRecordsDashboard.module.scss';
 import 'bootstrap-css-only/css/bootstrap.min.css';
 import 'mdbreact/dist/css/mdb.css';
+import styles from './LeaveRecordsDashboard.module.scss';
 
 
 
@@ -65,7 +65,7 @@ export default class LeaveRecordsDashboard extends React.Component<ILeaveRecords
   private async getUserInfo(): Promise<void> {
     try {
       const response = await axios.get(
-        this._absoluteUrl + `/_api/web/lists/getbytitle('employee')/items?` +
+        this._absoluteUrl + `/_api/web/lists/getbytitle('Employee Card Record')/items?` +
           `$select=CARD_NO &` +
           `$filter=EMAIL eq '${this._userEmail}'`
       );
@@ -269,160 +269,159 @@ export default class LeaveRecordsDashboard extends React.Component<ILeaveRecords
 
     return (
       <section className={styles.leaveRecordsDashboard}>
-        {/* Top Bar section */}
-        <div className={styles.leaveOverview}>
-          {/* Title section */}
-          <div className={styles.leaveTitleBar}>
-            <Grid container>
-              <Grid item sm={8} md={9}>
-                <div className={styles.leaveTitleBarItem} onClick={()=> this.setState({isExpanded: !isExpanded})}>
-                  {this._selectedYear.getFullYear().toString()}假期查詢
-                  {!isExpanded && <ExpandMore id={styles.expandIcon} />}
-                  {isExpanded && <ExpandLess id={styles.expandIcon} />}
-                </div>
-              </Grid>
-              <Grid item sm={4} md={3}>
-                <div style={{whiteSpace: 'normal'}} className={styles.leaveTitleBarItem}>
-                  <Toggle
-                    className={styles.toggle}
-                    defaultChecked
-                    onText="切換至列表"
-                    offText="切換至月歷"
-                    onChange={(onChange, isChecked) => {
-                      if(isChecked) 
-                        this.setState({contentView: 'calendar'})
-                      else
-                        this.setState({contentView: 'list'})
-                    }}
-                  />
-                </div>
-              </Grid>
-            </Grid>
-          </div>
-
-          {/* Leave Overiew section */}
-          <div className={styles.divider} />
-          <div >
-            <Grid container>
-              <Grid item sm={3} md={3}>年假</Grid>
-              <Grid item sm={3} md={3}>總數 <span className={styles.leaveTotal}>{isNull(userAnnualLeave.data) ? 0 : userAnnualLeave.data.annualLeaveTotal}</span></Grid>
-              <Grid item sm={3} md={3}>已取 <span className={styles.leaveTaken}>{isNull(userAnnualLeave.data) ? 0 : userAnnualLeave.data.annualLeaveTaken}</span></Grid>
-              <Grid item sm={3} md={3}>餘額 <span className={styles.leaveRemaining}>{isNull(userAnnualLeave.data) ? 0 : (userAnnualLeave.data.annualLeaveTotal - userAnnualLeave.data.annualLeaveTaken)}</span></Grid>
-            </Grid>
-            <div className={styles.divider} />
-            <Grid container>
-              <Grid item sm={6} md={6}>病假</Grid>
-              <Grid item sm={6} md={6}>已取 <span className={styles.leaveTaken}>{isNull(userAnnualLeave.data) ? 0 : userAnnualLeave.data.sickLeaveTaken}</span></Grid>
-            </Grid>
-          </div>
-        </div>
-
-        {/* User Leave Calendar View section */}
-        {isExpanded &&
-          <div className={styles.leaveContentView}>
-            {/* Filter section */}
-            <div className={styles.filterSection}>
-              <Grid container spacing={1}>
-                <Grid item xs={12} sm={4} md={3}>年份</Grid>
-                <Grid item xs={12} sm={4} md={3}>類別</Grid>
-              </Grid>
-              <Grid container spacing={1}>
-                <Grid item xs={12} sm={4} md={3}>
-                  <DatePicker
-                    placeholderText='--選擇年份--'
-                    className='form-control form-control-sm'
-                    popperClassName={styles.datePickerPopper}
-                    value={isNull(filterYear)
-                            ? null 
-                            : moment(filterYear).format('yyyy')}
-                    dateFormat='yyyy'
-                    showYearPicker
-                    onChange={(date) => {
-                      this.setState({filterYear: date});
-                    }}
-                  />
-                </Grid>
-                <Grid item xs= {12} sm={4} md={3}>
-                  <Dropdown
-                    className={styles.dropdown}
-                    placeholder='--假期類別--'
-                    options={this._leaveTypesOptions}
-                    selectedKey={this.getDropdownSelectedKey()}
-                    onChange={(onChange, option) => {
-                      this.setState({
-                        filterLeaveType: option.text
-                      })
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={3} md={3} className={styles.actionButtonGroup}>
-                  <IconButton className={styles.iconButton} onClick={() => this.applyFilter()}><Search /></IconButton>
-                  <IconButton className={styles.iconButton} onClick={() => this.resetFilter()}><Clear /></IconButton>
-                </Grid>
-              </Grid>
+        <div className='container' style={{width: '100vw'}}>
+          {/* Top Bar section */}
+          <div className={classnames('row', styles.titleBar)}>
+            <div className={classnames('col-9', styles.noPadding)}>
+              <div className={styles.titleBarItem} onClick={()=> this.setState({isExpanded: !isExpanded})}>
+                {this._selectedYear.getFullYear().toString()}假期查詢
+                {!isExpanded && <ExpandMore id={styles.expandIcon} />}
+                {isExpanded && <ExpandLess id={styles.expandIcon} />}
+              </div>
             </div>
-            
-            {/* Calendar section */}
-            { contentView === 'calendar' &&
-              <div style={{width: '100%'}}>
-                <FullCalendar
-                  ref={this._calendarRef}
-                  plugins={[ dayGridPlugin ]}
-                  initialView="dayGridMonth"
-                  events={this._userCalendarEvents}
-                  eventContent={this.renderEventContent}
+            <div className={classnames('col-3', styles.colCenter)}>
+              <div className={styles.titleBarItem}>
+                <Toggle
+                  className={styles.toggle}
+                  defaultChecked
+                  onText="切換至列表"
+                  offText="切換至月歷"
+                  onChange={(onChange, isChecked) => {
+                    if(isChecked) 
+                      this.setState({contentView: 'calendar'})
+                    else
+                      this.setState({contentView: 'list'})
+                  }}
                 />
               </div>
-            }
+            </div>
+          </div>
 
-            {/* List section */}
-            { contentView === 'list' &&
-              <div>
-                {userLeaves.loadingStatus === 'loading' &&
-                  <div className={styles.leaveListEmpty}>
-                    Loading...
+          <div className='row'>
+            <div className={classnames('col-12', styles.noPadding)}><div className={styles.divider} /></div>
+            <div className={classnames('col-3', styles.noPadding)}>年假</div>
+            <div className={classnames('col-3', styles.noPadding)}>總數 <span className={styles.decoratedTextBlue}>{isNull(userAnnualLeave.data) ? 0 : userAnnualLeave.data.annualLeaveTotal}</span></div>
+            <div className={classnames('col-3', styles.noPadding)}>已取 <span className={styles.decoratedTextGray}>{isNull(userAnnualLeave.data) ? 0 : userAnnualLeave.data.annualLeaveTaken}</span></div>
+            <div className={classnames('col-3', styles.noPadding)}>餘額 <span className={styles.decoratedTextGreen}>{isNull(userAnnualLeave.data) ? 0 : (userAnnualLeave.data.annualLeaveTotal - userAnnualLeave.data.annualLeaveTaken)}</span></div>
+          </div>
+
+          <div className='row'>
+            <div className={classnames('col-12', styles.noPadding)}><div className={styles.divider} /></div>
+            <div className={classnames('col-6', styles.noPadding)}>病假</div>
+            <div className={classnames('col-6', styles.noPadding)}>已取 <span className={styles.decoratedTextGray}>{isNull(userAnnualLeave.data) ? 0 : userAnnualLeave.data.sickLeaveTaken}</span></div>
+          </div>
+
+          {/* User Leave Content section */}
+          {isExpanded &&
+            <div style={{marginTop: '50px'}}>
+              <div className='row'>
+                {/* Filter section */}
+                <div className={classnames('col-sm-4 col-md-3', styles.noPadding)}>
+                  <div className='col-12'>
+                    年份
                   </div>
-                }
-                {userLeaves.loadingStatus === 'loadError' &&
-                  <div className={styles.leaveListEmpty}>
-                    <Error style={{color: 'slategrey'}}/>
-                    <div>Oops, Something went wrong</div>
-                  </div>
-                }
-                {(userLeaves.loadingStatus === 'loaded' || userLeaves.loadingStatus === 'loadNoData')  &&
-                  <div>
-                    <MDBDataTable
-                      className={styles.leaveTable}
-                      striped
-                      bordered
-                      small
-                      noBottomColumns
-                      sortable={false}
-                      entriesOptions={[10, 20]}
-                      entriesLabel='顯示項目'
-                      searchLabel='搜尋'
-                      paginationLabel={['上貢', '下頁']}
-                      infoLabel={['顯示第', '至' ,'項，共' ,'項記錄']}
-                      noRecordsFoundLabel='沒有記錄'
-                      data={{
-                        columns: leaveTableColumns,
-                        rows: userLeaves.data
+                  <div className='col-12'>
+                    <DatePicker
+                      placeholderText='--選擇年份--'
+                      className='form-control form-control-sm'
+                      popperClassName={styles.datePickerPopper}
+                      value={isNull(filterYear)
+                              ? null 
+                              : moment(filterYear).format('yyyy')}
+                      dateFormat='yyyy'
+                      showYearPicker
+                      onChange={(date) => {
+                        this.setState({filterYear: date});
                       }}
                     />
                   </div>
-                }
+                </div>
+                <div className={classnames('col-sm-4 col-md-3', styles.noPadding)}>
+                  <div className='col-12'>
+                    類別
+                  </div>
+                  <div className='col-12'>
+                    <Dropdown
+                      className={styles.dropdown}
+                      placeholder='--假期類別--'
+                      options={this._leaveTypesOptions}
+                      selectedKey={this.getDropdownSelectedKey()}
+                      onChange={(onChange, option) => {
+                        this.setState({
+                          filterLeaveType: option.text
+                        })
+                      }}
+                    />
+                  </div>
+                </div>
+                <div className={classnames('col-sm-4 col-md-6', styles.filterButton)}>
+                  <IconButton className={styles.iconButton} onClick={() => this.applyFilter()}><Search /></IconButton>
+                  <IconButton className={styles.iconButton} onClick={() => this.resetFilter()}><Clear /></IconButton>
+                </div>
               </div>
-            }
-          </div>
-        }
+              
+              <div style={{margin: '30px 0px'}}>
+                {/* Calendar section */}
+                { contentView === 'calendar' &&
+                  <div className={classnames('col-12', styles.noPadding)}>
+                    <FullCalendar
+                      ref={this._calendarRef}
+                      plugins={[ dayGridPlugin ]}
+                      initialView="dayGridMonth"
+                      events={this._userCalendarEvents}
+                      eventContent={this.renderEventContent}
+                    />
+                  </div>
+                }
 
-        {/* Footer section */}
-        {isExpanded &&
-          <div className={styles.footer}>
-            備註︰
-            <br />年假必需每年放清，不可累積，如有特殊情況，由公司酌情處理。
-          </div>
-        }
+                {/* List section */}
+                { contentView === 'list' &&
+                  <div className={classnames('col-12', styles.noPadding)}>
+                    {userLeaves.loadingStatus === 'loading' &&
+                      <div className={styles.leaveListEmpty}>
+                        Loading...
+                      </div>
+                    }
+                    {userLeaves.loadingStatus === 'loadError' &&
+                      <div className={styles.leaveListEmpty}>
+                        <Error style={{color: 'slategrey'}}/>
+                        <div>Oops, Something went wrong</div>
+                      </div>
+                    }
+                    {(userLeaves.loadingStatus === 'loaded' || userLeaves.loadingStatus === 'loadNoData')  &&
+                      <div>
+                        <MDBDataTable
+                          className={styles.leaveTable}
+                          striped
+                          bordered
+                          small
+                          noBottomColumns
+                          sortable={false}
+                          entriesOptions={[10, 20]}
+                          entriesLabel='顯示項目'
+                          searchLabel='搜尋'
+                          paginationLabel={['上貢', '下頁']}
+                          infoLabel={['顯示第', '至' ,'項，共' ,'項記錄']}
+                          noRecordsFoundLabel='沒有記錄'
+                          data={{
+                            columns: leaveTableColumns,
+                            rows: userLeaves.data
+                          }}
+                        />
+                      </div>
+                    }
+                  </div>
+                }
+
+                {/* Footer section */}
+                <div className={classnames('col-12', styles.footer)}>
+                  備註︰
+                  <br />年假必需每年放清，不可累積，如有特殊情況，由公司酌情處理。
+                </div>
+              </div>
+            </div>
+          }
+        </div>
       </section>
     );
   }
