@@ -231,9 +231,7 @@ export default class LeaveRecordsDashboard extends React.Component<ILeaveRecords
   private renderEventContent(eventInfo: EventContentArg): JSX.Element {
     return (
       <>
-        <div className={styles.calendarEvents}>
-          <i>{eventInfo.event.title}</i>
-        </div>
+        <i style={{color: 'black'}}>{eventInfo.event.title}</i>
       </>
     );
   }
@@ -313,9 +311,9 @@ export default class LeaveRecordsDashboard extends React.Component<ILeaveRecords
 
           {/* User Leave Content section */}
           {isExpanded &&
-            <div style={{marginTop: '50px'}}>
-              <div className='row'>
-                {/* Filter section */}
+            <>
+              {/* Filter section */}
+              <div className='row' style={{marginTop: '50px'}}>
                 <div className={classnames('col-sm-4 col-md-3', styles.noPadding)}>
                   <div className='col-12'>
                     年份
@@ -325,9 +323,11 @@ export default class LeaveRecordsDashboard extends React.Component<ILeaveRecords
                       placeholderText='--選擇年份--'
                       className='form-control form-control-sm'
                       popperClassName={styles.datePickerPopper}
-                      value={isNull(filterYear)
-                              ? null 
-                              : moment(filterYear).format('yyyy')}
+                      value={
+                        isNull(filterYear)
+                          ? moment(new Date()).format('yyyy')
+                          : moment(filterYear).format('yyyy')
+                      }
                       dateFormat='yyyy'
                       showYearPicker
                       onChange={(date) => {
@@ -355,8 +355,12 @@ export default class LeaveRecordsDashboard extends React.Component<ILeaveRecords
                   </div>
                 </div>
                 <div className={classnames('col-sm-4 col-md-6', styles.filterButton)}>
-                  <IconButton className={styles.iconButton} onClick={() => this.applyFilter()}><Search /></IconButton>
-                  <IconButton className={styles.iconButton} onClick={() => this.resetFilter()}><Clear /></IconButton>
+                  <IconButton className={styles.iconButton} onClick={() => this.applyFilter()}>
+                    <Search />
+                  </IconButton>
+                  <IconButton className={styles.iconButton} onClick={() => this.resetFilter()}>
+                    <Clear />
+                  </IconButton>
                 </div>
               </div>
               
@@ -369,6 +373,7 @@ export default class LeaveRecordsDashboard extends React.Component<ILeaveRecords
                       plugins={[ dayGridPlugin ]}
                       initialView="dayGridMonth"
                       events={this._userCalendarEvents}
+                      eventClassNames={styles.calendarEvents}
                       eventContent={this.renderEventContent}
                     />
                   </div>
@@ -385,7 +390,7 @@ export default class LeaveRecordsDashboard extends React.Component<ILeaveRecords
                     {userLeaves.loadingStatus === 'loadError' &&
                       <div className={styles.leaveListEmpty}>
                         <Error style={{color: 'slategrey'}}/>
-                        <div>Oops, Something went wrong</div>
+                        Something went wrong
                       </div>
                     }
                     {(userLeaves.loadingStatus === 'loaded' || userLeaves.loadingStatus === 'loadNoData')  &&
@@ -419,7 +424,7 @@ export default class LeaveRecordsDashboard extends React.Component<ILeaveRecords
                   <br />年假必需每年放清，不可累積，如有特殊情況，由公司酌情處理。
                 </div>
               </div>
-            </div>
+            </>
           }
         </div>
       </section>

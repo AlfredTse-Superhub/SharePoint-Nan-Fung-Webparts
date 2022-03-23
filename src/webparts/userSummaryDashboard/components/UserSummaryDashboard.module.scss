@@ -42,13 +42,12 @@
 
 .link {
   text-decoration: none;
-  color: "[theme:link, default:#03787c]";
-  color: var(--link);
+  color: rgb(135, 100, 184) !important;
 }
 
 #largeIcon {
-  width: 48px;
-  height: 48px;
+  width: 60px;
+  height: 60px;
   color: #666666;
 }
 

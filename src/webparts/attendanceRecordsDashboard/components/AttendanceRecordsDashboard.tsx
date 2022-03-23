@@ -20,6 +20,8 @@ import styles from './AttendanceRecordsDashboard.module.scss';
 export default class AttendanceRecordsDashboard extends React.Component<IAttendanceRecordsDashboardProps, IAttendanceRecordsDashboardState> {
   private _userEmail: string = this.props.context.pageContext.user.email;
   private _absoluteUrl: string = this.props.context.pageContext.web.absoluteUrl;
+  private _defaultDateFrom: Date = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+  private _defaultDateTo: Date = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1);
 
   constructor(props: IAttendanceRecordsDashboardProps) {
     super(props);
@@ -150,13 +152,13 @@ export default class AttendanceRecordsDashboard extends React.Component<IAttenda
     return (
       <section className={styles.attendanceRecordsDashboard}>
         <div className='container' style={{width: '100vw'}}>
-          <div className='row'>
           {/* Header section */}
-          {/* <div className={styles.attendanceTitleBar}>考勤查詢</div> */}
+          <div className='row'>
             <div className={classnames('col-12', styles.noPadding)} style={{margin: '10px 0px'}}>
               <div className={styles.divider} />
             </div>
           </div>
+          
           {/* Filter section */}
           <div className='row'>
             <div className={classnames('col-sm-4 col-md-3', styles.noPadding)}>
@@ -167,9 +169,12 @@ export default class AttendanceRecordsDashboard extends React.Component<IAttenda
                 <DatePicker
                   placeholderText='--選擇日期--'
                   className='form-control form-control-sm'
-                  value={isNull(filterDateFrom)
-                          ? null 
-                          : this.formatDate(filterDateFrom.toISOString())}
+                  value={
+                    isNull(filterDateFrom)
+                      // ? null
+                      ? this.formatDate(this._defaultDateFrom.toISOString())
+                      : this.formatDate(filterDateFrom.toISOString())
+                  }
                   onChange={(date) => {
                     this.setState({
                       filterDateFrom: date
@@ -186,9 +191,11 @@ export default class AttendanceRecordsDashboard extends React.Component<IAttenda
                 <DatePicker
                   placeholderText='--選擇日期--'
                   className='form-control form-control-sm'
-                  value={isNull(filterDateTo) 
-                          ? null 
-                          : moment(filterDateTo).format('yyyy-MM-DD')}
+                  value={
+                    isNull(filterDateTo)
+                      ? this.formatDate(this._defaultDateTo.toISOString())
+                      : moment(filterDateTo).format('yyyy-MM-DD')
+                  }
                   onChange={(date) => {
                     this.setState({
                       filterDateTo: date
@@ -198,8 +205,12 @@ export default class AttendanceRecordsDashboard extends React.Component<IAttenda
               </div>
             </div>
             <div className={classnames('col-sm-4 col-md-6', styles.filterButton)}>
-              <IconButton className={styles.iconButton} onClick={() => this.applyFilter()}><Search /></IconButton>
-              <IconButton className={styles.iconButton} onClick={() => this.resetFilter()}><Clear /></IconButton>
+              <IconButton className={styles.iconButton} onClick={() => this.applyFilter()}>
+                <Search />
+              </IconButton>
+              <IconButton className={styles.iconButton} onClick={() => this.resetFilter()}>
+                <Clear />
+              </IconButton>
             </div>
           </div>
 
@@ -213,7 +224,7 @@ export default class AttendanceRecordsDashboard extends React.Component<IAttenda
             {userAttendance.loadingStatus === 'loadError' &&
               <div className={styles.attendanceListEmpty}>
                 <Error style={{color: 'slategrey'}}/>
-                <div>Oops, Something went wrong</div>
+                Something went wrong
               </div>
             }
             {(userAttendance.loadingStatus === 'loaded' || userAttendance.loadingStatus === 'loadNoData') &&

@@ -3,7 +3,7 @@
   "solution": {
     "name": "Nan Fung Webparts",
     "id": "87d16c45-7666-4df9-a790-07e183790b16",
-    "version": "1.0.0.7",
+    "version": "1.0.0.11",
     "includeClientSideAssets": true,
     "skipFeatureDeployment": true,
     "isDomainIsolated": false,

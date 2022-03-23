@@ -135,29 +135,33 @@ export default class UserSummaryDashboard extends React.Component<IUserSummaryDa
               <Tabs className={styles.tabs}>
                 <TabList>
                   <Tab>Leave</Tab>
-                  <Tab>Lunch</Tab>
                   <Tab>Attendance</Tab>
-                  <Tab>Snack</Tab>
                 </TabList>
 
                 <TabPanel>
                   <div className='col-12'>
                     {userAnnualLeave.loadingStatus === 'loading' &&
-                      <div className={styles.colCenter}>Loading...</div>
+                      <div className={styles.colCenter}>
+                        Loading...
+                      </div>
                     }
                     {userAnnualLeave.loadingStatus === 'loadNoData' &&
-                      <div className={styles.colCenter}>-No Data-</div>
+                      <div className={styles.colCenter}>
+                        -No Data-
+                      </div>
                     }
                     {userAnnualLeave.loadingStatus === 'loadError' &&
                       <div className={styles.colCenter}>
                         <Error style={{color: 'slategrey'}}/>
-                        <div>Oops, Something went wrong</div>
+                        Something went wrong
                       </div>
                     }
                     {userAnnualLeave.loadingStatus === 'loaded' &&
-                      <a className={styles.link} href={this.props.leaveLink}>
+                      <>
                         <div className='row'>
-                          <div className='col-6'>已取年假</div>
+                          <div className='col-6'>
+                            已取年假
+                          </div>
                           <div className={classnames('col-6', styles.colCenter)}>
                             {userAnnualLeave.data.annualTaken}天
                           </div>
@@ -167,42 +171,55 @@ export default class UserSummaryDashboard extends React.Component<IUserSummaryDa
                         </div>
 
                         <div className='row'>
-                          <div className='col-6'>年假剩餘</div>
+                          <div className='col-6'>
+                            年假剩餘
+                          </div>
                           <div className={classnames('col-6', styles.colCenter)}>
                             {userAnnualLeave.data.annualRemaining}天
                           </div>
                         </div>
-                      </a>
+
+                        <div className='row' style={{marginTop: '20px'}}>
+                          <div className='col-12'>
+                            <a className={styles.link} href={this.props.leaveLink}>
+                              查看更多
+                            </a>
+                          </div>
+                        </div>
+                      </>
                     }
-                  </div>
-                </TabPanel>
-                <TabPanel>
-                  <div className={classnames('col-12', styles.colCenter)}>
-                    <h2>Lunch</h2>
                   </div>
                 </TabPanel>
 
                 <TabPanel>
-                  <div className={classnames('col-12', styles.colCenter)}>
+                  <div className='col-12'>
                     {userAttendance.loadingStatus === 'loading' &&
-                      <div>Loading...</div>
+                      <div className={styles.colCenter}>
+                        Loading...
+                      </div>
                     }
                     {userAttendance.loadingStatus === 'loadNoData' &&
-                      <div>-No Data-</div>
+                      <div className={styles.colCenter}>
+                        -No Data-
+                      </div>
                     }
                     {userAttendance.loadingStatus === 'loadError' &&
-                      <div>
-                        <Error style={{color: 'slategrey'}}/> Something went wrong
+                      <div className={styles.colCenter}>
+                        <Error style={{color: 'slategrey'}}/> 
+                        Something went wrong
                       </div>
                     }
                     {userAttendance.loadingStatus === 'loaded' &&
                       <div className='row'>
-                        <div className={styles.colCenter}>
-                          <a href={this.props.attendanceLink}>
-                            <DateRange id={styles.largeIcon} />
+                        <div style={{paddingLeft: '15px'}}>
+                          <a className={styles.link} href={this.props.attendanceLink}>
+                            <DateRange id={styles.largeIcon}/>
+                            <div style={{marginTop: '8.5px'}}>
+                              查看更多
+                            </div>
                           </a>
                         </div>
-                        <div style={{marginLeft: '5px'}}>
+                        <div style={{paddingLeft: '10px'}}>
                           { userAttendance.data.map((item: IUserAttendanceData) => {
                               return (
                                 <div className={styles.attendanceRow}>
@@ -213,12 +230,6 @@ export default class UserSummaryDashboard extends React.Component<IUserSummaryDa
                         </div>
                       </div>
                     }
-                  </div>
-                </TabPanel>
-
-                <TabPanel>
-                  <div className={classnames('col-12', styles.colCenter)}>
-                    <h2>Snack</h2>
                   </div>
                 </TabPanel>
               </Tabs>

@@ -109,7 +109,7 @@
 
 .calendarEvents {
   width: 100%;
-  height: 17px;
+  height: 18px;
   background: lightsteelblue;
   border: 1px solid transparent;
   border-radius: 5px;
@@ -180,6 +180,8 @@
 }
 
 .footer {
+  padding: 0px !important;
+  margin-top: 30px;
   font-size: 11px;
   color: darkred;
 }
